@@ -1,17 +1,27 @@
-from flask import Flask
+from flask import Flask, render_template, request, jsonify
 import sqlite3 as sql
 
 app = Flask(__name__)
 
-@app.route('/register')
+@app.route('/register', methods=['POST'])
 def register():
-    conn = sql.connect('db/users.db')
-    cur = conn.cursor()
-    cur.execute('INSERT INTO users (username, password) VALUES ("tutaj_jest_testowe_username_kurwa", "tutaj_jest_testowe_haslo")')
-    conn.commit()
-    conn.close()
+    json = request.get_json(force=True) 
 
-    return '<p>Hello, Socialify! XDDDD</p>'
+    if json['password'] == json['repeat_password']:
+        con = sql.connect('db/users.db')
+        cur = con.cursor()
+        
+        if (json['username'],) in cur.execute('SELECT username FROM users'):
+            return '<p>Username is just owned!</p>'
+
+        else:
+            cur.execute(f'INSERT INTO users (username, password) VALUES ("{ json["username"] }", "{ json["password"] }")')
+            con.commit()
+            con.close()
+
+            return '<p>Hello, Socialify!</p>'
+    else:
+        return '<p>Passwords is not same!</p>'
 
 if __name__ == '__main__':
     app.run(debug=True)
