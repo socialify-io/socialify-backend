@@ -1,0 +1,80 @@
+/* Google Fonts */
+@import url(https://fonts.googleapis.com/css?family=Rajdhani);
+
+html {
+    min-height: 100%;
+    overflow: hidden;
+}
+
+body {
+    height: calc(100vh - 8em);
+    padding: 4em;
+    background-color: rgb(25, 25, 25);
+}
+
+h1 {
+    font-weight: 400;
+}
+
+.login-box {
+    /* Sizes, Margins... */
+    background-color: rgb(33, 33, 33, 0.40);
+    padding: 4em;
+    border-radius: 1rem;
+
+    /* Font */
+    font-family: 'Rajdhani';
+    color: rgba(255, 255, 255, 0.75);
+
+    /* Text */
+    text-align: center;
+}
+
+.login-box .user-box input {
+    width: 70%;
+    padding: 1rem 0;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 2em;
+    border: none;
+    border-bottom: 1px solid #fff;
+    outline: none;
+    background-color: transparent;
+}
+
+.login-box .user-box label {
+    position: relative;
+    top: 0rem;
+    left: -67%;
+    padding: 1rem 0;
+    font-size: 16px;
+    color: #fff;
+    transition: .5s;
+}
+
+.login-box .user-box input:focus ~ label,
+.login-box .user-box input:active ~ label {
+    top: -1rem;
+    left: -67%;
+    color: #03e9f4;
+}
+
+.login-box a {
+    position: relative;
+    display: inline-block;
+    padding: 1rem 2rem;
+    color: #03e9f4;
+    font-size: 16px;
+    text-decoration: none;
+    text-transform: uppercase;
+    overflow: hidden;
+    transition: .5s;
+    margin-top: 40px;
+    letter-spacing: 4px;
+}
+
+.login-box a:hover {
+    background-color: #03e9f4;
+    color: #fff;
+    border-radius: 5px;
+}

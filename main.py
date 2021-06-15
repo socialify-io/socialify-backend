@@ -1,7 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3 as sql
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates', static_folder='static')
+
+@app.route('/')
+def what_are_you_looking_for():
+    return render_template('what_are_you_looking_for.html')
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -22,6 +26,10 @@ def register():
             return '<p>Hello, Socialify!</p>'
     else:
         return '<p>Passwords is not same!</p>'
+
+@app.route('/admin')
+def admin():
+    return render_template('admin.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
