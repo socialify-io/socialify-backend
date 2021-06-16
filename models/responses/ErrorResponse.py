@@ -1,3 +1,3 @@
-class ResponseError(object):
+class ErrorResponse(object):
     errors = []
     success = "false"
