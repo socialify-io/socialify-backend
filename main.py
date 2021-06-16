@@ -2,6 +2,12 @@ from flask import Flask, render_template, request, jsonify
 import sqlite3 as sql
 import hashlib
 
+#models
+from models.errors._api_error import ApiError
+
+from models.responses._error_response import ErrorResponse
+from models.responses._response import Response
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
 HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']
@@ -22,7 +28,13 @@ async def register():
         cur = con.cursor()
         
         if (body['username'],) in cur.execute('SELECT username FROM users'):
-            return '<p>Username is just owned!</p>'
+            error = ApiError(
+                code = "InvalidUsername",
+                reason = "This username is already taken."
+            ).__dict__
+
+            return jsonify(ErrorResponse(
+                        errors = [error]).__dict__)
 
         else:
             enc_pass = hashlib.sha256(bytes(body['password'], 'utf-8')).hexdigest()
@@ -33,7 +45,14 @@ async def register():
 
             return '<p>Hello, Socialify!</p>'
     else:
-        return '<p>Passwords is not same!</p>'
+        error = ApiError(
+            code = "InvalidRepeatPassword",
+            reason = "Passwords are not same."
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+                    errors = [error]).__dict__)
+
 
 """
 @app.route('/admin', methods=HTTP_METHODS)
