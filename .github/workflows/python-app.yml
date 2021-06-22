@@ -37,6 +37,6 @@ jobs:
     - name: Create DB
       run: python db/create_db.py
     - name: Run Server
-      run: FLASK_APP=main.py flask run
+      run: python main.py
     - name: Unit Tests
       run: pytest
