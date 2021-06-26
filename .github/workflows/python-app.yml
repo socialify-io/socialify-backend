@@ -36,7 +36,3 @@ jobs:
     #    pytest
     - name: Create DB
       run: python db/create_db.py
-    - name: Unit Tests
-      run: |
-        python main.py
-        pytest
