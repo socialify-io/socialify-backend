@@ -14,7 +14,7 @@ def admin():
     return render_template('admin.html')
 """
 
-from account import register
+from account import register, login
 
 if __name__ == '__main__':
     app.run(debug=True)

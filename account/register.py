@@ -9,6 +9,7 @@ from models.errors._api_error import ApiError
 
 from models.responses._error_response import ErrorResponse
 from models.responses._response import Response
+from models.errors.codes._error_codes import Error
 
 @app.route('/register', methods=HTTP_METHODS)
 async def register():
@@ -23,7 +24,7 @@ async def register():
         
         if (body['username'],) in cur.execute('SELECT username FROM users'):
             error = ApiError(
-                code = "InvalidUsername",
+                code = Error().InvalidUsername,
                 reason = "This username is already taken."
             ).__dict__
 
@@ -40,7 +41,7 @@ async def register():
             return jsonify(Response(data={}).__dict__)
     else:
         error = ApiError(
-            code = "InvalidRepeatPassword",
+            code = Error().InvalidRepeatPassword,
             reason = "Passwords are not same."
         ).__dict__
 
