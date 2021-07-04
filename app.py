@@ -1,3 +1,4 @@
+from sqlite3.dbapi2 import DatabaseError
 from flask import Flask, render_template, request, jsonify
 
 from Crypto.PublicKey import RSA

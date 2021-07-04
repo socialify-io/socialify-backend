@@ -15,16 +15,16 @@ def generate_keys():
 
 def encrypt_public_key(a_message, public_key):
     encryptor = PKCS1_OAEP.new(public_key)
-    encrypted_msg = encryptor.encrypt(a_message)
-    print(encrypted_msg)
+    encrypted_msg = encryptor.encrypt(bytes(a_message, 'utf-8'))
+    #print(encrypted_msg)
     encoded_encrypted_msg = base64.b64encode(encrypted_msg)
-    print(encoded_encrypted_msg)
+    #print(encoded_encrypted_msg)
     return encoded_encrypted_msg
 
 def decrypt_private_key(encoded_encrypted_msg, private_key):
     encryptor = PKCS1_OAEP.new(private_key)
     decoded_encrypted_msg = base64.b64decode(encoded_encrypted_msg)
-    print(decoded_encrypted_msg)
+    #print(decoded_encrypted_msg)
     decoded_decrypted_msg = encryptor.decrypt(decoded_encrypted_msg)
-    print(decoded_decrypted_msg)
-    #return decoded_decrypted_msg
+    #print(decoded_decrypted_msg)
+    return decoded_decrypted_msg.decode()
