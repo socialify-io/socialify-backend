@@ -1,4 +1,4 @@
-from __main__ import app, HTTP_METHODS
+from __main__ import app, HTTP_METHODS, route
 from flask import Flask, render_template, request, jsonify
 
 import sqlite3 as sql
@@ -12,7 +12,10 @@ from models.responses._response import Response
 
 from models.errors.codes._error_codes import Error
 
-@app.route('/login', methods=HTTP_METHODS)
+#crypto
+from .pass_enc import generate_keys
+
+@app.route(f'{route}/login', methods=HTTP_METHODS)
 async def login():
     if request.method != 'POST':
         return render_template('what_are_you_looking_for.html')
@@ -34,3 +37,27 @@ async def login():
 
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
+
+@app.route(f'{route}/getkey', methods=HTTP_METHODS)
+async def getKey():
+    if request.method != 'POST':
+        return render_template('what_are_you_looking_for.html')
+
+    key = generate_keys()
+
+    pub_key = key.publickey()
+
+    con = sql.connect('db/keys.db')
+    cur = con.cursor()
+    
+    cur.execute(f'INSERT INTO keys (pubKey, privKey) VALUES ("{ key.exportKey() }", "{ pub_key.exportKey() }")')
+
+    con.close()
+    
+    response = Response(
+        data = {
+            "pubKey": f'{pub_key.exportKey()}'
+        }
+    )
+
+    return jsonify(response.__dict__)

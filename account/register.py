@@ -1,4 +1,4 @@
-from __main__ import app, HTTP_METHODS
+from __main__ import app, HTTP_METHODS, route
 from flask import Flask, render_template, request, jsonify
 
 import sqlite3 as sql
@@ -11,7 +11,7 @@ from models.responses._error_response import ErrorResponse
 from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
-@app.route('/register', methods=HTTP_METHODS)
+@app.route(f'{route}/register', methods=HTTP_METHODS)
 async def register():
     if request.method != 'POST':
         return render_template('what_are_you_looking_for.html')

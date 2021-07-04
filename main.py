@@ -1,11 +1,18 @@
 from flask import Flask, render_template, request, jsonify
 
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+import base64
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
 HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']
 
-@app.route('/', methods=HTTP_METHODS)
-async def what_are_you_looking_for():
+VERSION = 0.1
+route = f"/api/v{VERSION}"
+
+@app.errorhandler(404)
+def page_not_found(e):
     return render_template('what_are_you_looking_for.html')
 
 """
