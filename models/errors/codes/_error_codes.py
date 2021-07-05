@@ -5,3 +5,10 @@ class Error(object):
 
     # Login
     InvalidUsernameOrPassword = 2
+
+    # Crypto
+    InvalidPublicRSAKey = 3
+    InvalidPasswordEncryption = 4
+
+    # Server
+    InternalServerError = 5

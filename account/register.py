@@ -34,11 +34,33 @@ async def register():
 
     pub_key_string = body['pubKey']
     cur_keys.execute(f'SELECT privKey FROM keys WHERE pubKey="{ pub_key_string }"')
-    priv_key = cur_keys.fetchone()[0]
+    
+    try:
+        priv_key = cur_keys.fetchone()[0]
+
+    except TypeError:
+        error = ApiError(
+            code=Error().InvalidPublicRSAKey,
+            reason='Invalid public RSA key.'
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+            errors=[error]).__dict__)
 
     priv_key = RSA.importKey(priv_key)
 
-    password = decrypt_private_key(body['password'], priv_key)
+    try:
+        password = decrypt_private_key(body['password'], priv_key)
+
+    except:
+        error = ApiError(
+            code=Error().InvalidPasswordEncryption,
+            reason='Invalid password encryption.'
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+            errors=[error]).__dict__)
+
     repeat_password = decrypt_private_key(body['repeat_password'], priv_key)
 
     con_keys.close()
@@ -50,7 +72,7 @@ async def register():
         if (body['username'],) in cur.execute('SELECT username FROM users'):
             error = ApiError(
                 code = Error().InvalidUsername,
-                reason = "This username is already taken."
+                reason = 'This username is already taken.'
             ).__dict__
 
             return jsonify(ErrorResponse(
@@ -70,7 +92,7 @@ async def register():
     else:
         error = ApiError(
             code = Error().InvalidRepeatPassword,
-            reason = "Passwords are not same."
+            reason = 'Passwords are not same.'
         ).__dict__
         
         return jsonify(ErrorResponse(

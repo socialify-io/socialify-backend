@@ -37,22 +37,46 @@ async def login():
 
     pub_key_string = body['pubKey']
     cur_keys.execute(f'SELECT privKey FROM keys WHERE pubKey="{ pub_key_string }"')
-    privKey = cur_keys.fetchone()[0]
+    
+    try:
+        priv_key = cur_keys.fetchone()[0]
 
-    privKey = RSA.importKey(privKey)
+    except TypeError:
+        error = ApiError(
+            code=Error().InvalidPublicRSAKey,
+            reason='Invalid public RSA key.'
+        ).__dict__
 
-    password = decrypt_private_key(body['password'], privKey)
+        return jsonify(ErrorResponse(
+            errors=[error]).__dict__)
+    
+    priv_key = RSA.importKey(priv_key)
+
+    try:
+        password = decrypt_private_key(body['password'], priv_key)
+
+    except:
+        error = ApiError(
+            code=Error().InvalidPasswordEncryption,
+            reason='Invalid password encryption.'
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+            errors=[error]).__dict__)
 
     con_keys.close()
 
-    enc_pass = hashlib.sha256(bytes(password, 'utf-8')).hexdigest()
+    enc_pass_sha1 = hashlib.sha1(bytes(password, 'utf-8')).hexdigest()
+    enc_pass_sha256 = hashlib.sha256(bytes(enc_pass_sha1, 'utf-8')).hexdigest() 
+    enc_pass_sha512 = hashlib.sha512(bytes(enc_pass_sha256, 'utf-8')).hexdigest()
+    enc_pass_blake2b = hashlib.blake2b(bytes(enc_pass_sha512, 'utf-8')).hexdigest()
 
-    if (body['username'],) in cur.execute('SELECT username FROM users') and (enc_pass,) in cur.execute('SELECT password FROM users'):
+    if (body['username'],) in cur.execute('SELECT username FROM users') and (enc_pass_blake2b,) in cur.execute('SELECT password FROM users'):
         return jsonify(Response(data={}).__dict__)
     else:
         error = ApiError(
             code=Error().InvalidUsernameOrPassword,
-            reason="Invalid username or password."
+            reason='Invalid username or password.'
         ).__dict__
 
         return jsonify(ErrorResponse(
