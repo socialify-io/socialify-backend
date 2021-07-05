@@ -57,9 +57,12 @@ async def register():
                         errors = [error]).__dict__)
 
         else:
-            enc_pass = hashlib.sha256(bytes(password, 'utf-8')).hexdigest()
+            enc_pass_sha1 = hashlib.sha1(bytes(password, 'utf-8')).hexdigest()
+            enc_pass_sha256 = hashlib.sha256(bytes(enc_pass_sha1, 'utf-8')).hexdigest() 
+            enc_pass_sha512 = hashlib.sha512(bytes(enc_pass_sha256, 'utf-8')).hexdigest()
+            enc_pass_blake2b = hashlib.blake2b(bytes(enc_pass_sha512, 'utf-8')).hexdigest()
 
-            cur.execute(f'INSERT INTO users (username, password) VALUES ("{ body["username"] }", "{ enc_pass }")')
+            cur.execute(f'INSERT INTO users (username, password) VALUES ("{ body["username"] }", "{ enc_pass_blake2b }")')
             con.commit()
             con.close()
 
@@ -69,6 +72,6 @@ async def register():
             code = Error().InvalidRepeatPassword,
             reason = "Passwords are not same."
         ).__dict__
-
+        
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
