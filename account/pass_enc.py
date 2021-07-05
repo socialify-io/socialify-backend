@@ -6,10 +6,10 @@ def generate_keys():
     modulus_length = 2048
 
     key = RSA.generate(modulus_length)
-    print (key.exportKey())
+    #print (key.exportKey())
 
     pub_key = key.publickey()
-    print (pub_key.exportKey())
+    #print (pub_key.exportKey())
 
     return key
 
