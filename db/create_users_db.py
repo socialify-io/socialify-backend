@@ -1,7 +1,7 @@
 import sqlite3 as sql
 
-conn = sql.connect('users.db')
+conn = sql.connect('db/users.db')
 
-conn.execute('CREATE TABLE users (username TEXT, password TEXT)')
+conn.execute('CREATE TABLE users (id INTEGER PRIMARY KEY ASC, username TEXT NOT NULL, password TEXT NOT NULL)')
 
 conn.close()

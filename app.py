@@ -19,14 +19,21 @@ route = f"/api/v{VERSION}"
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
  
-from db.keys_db_declarative import Base, Key
+from db.keys_db_declarative import KeyBase, Key
+from db.users_db_declarative import UserBase, User
 
-engine = create_engine('sqlite:///db/keys.db')
-Base.metadata.bind = engine
+key_engine = create_engine('sqlite:///db/keys.db')
+KeyBase.metadata.bind = key_engine
  
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
+key_DBSession = sessionmaker(bind=key_engine)
+key_session = key_DBSession()
 
+
+user_engine = create_engine('sqlite:///db/users.db')
+UserBase.metadata.bind = user_engine
+ 
+user_DBSession = sessionmaker(bind=user_engine)
+user_session = user_DBSession()
 
 @app.errorhandler(404)
 def page_not_found(e):

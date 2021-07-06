@@ -1,6 +1,6 @@
-from __main__ import app, HTTP_METHODS, route, session
+from __main__ import app, HTTP_METHODS, route, key_session
 from flask import Flask, render_template, request, jsonify
-from db.keys_db_declarative import Base, Key
+from db.keys_db_declarative import KeyBase, Key
 
 import operator
 
@@ -45,7 +45,7 @@ async def login():
     """
 
     try:
-        priv_key = session.query(Key).filter(Key.pub_key == pub_key_string).one()
+        priv_key = key_session.query(Key).filter(Key.pub_key == pub_key_string).one()
         priv_key = priv_key.priv_key
 
     except:
@@ -108,8 +108,8 @@ async def getKey():
         priv_key = priv_key
         )
 
-    session.add(new_key)
-    session.commit()
+    key_session.add(new_key)
+    key_session.commit()
 
     """
     con = sql.connect('db/keys.db')

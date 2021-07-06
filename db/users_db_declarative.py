@@ -8,15 +8,15 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.sql.sqltypes import TEXT
  
-KeyBase = declarative_base()
+UserBase = declarative_base()
  
-class Key(KeyBase):
-    __tablename__ = 'keys'
+class User(UserBase):
+    __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    pub_key = Column(TEXT, nullable=False)
-    priv_key = Column(TEXT, nullable=False)
+    username = Column(TEXT, nullable=False)
+    password = Column(TEXT, nullable=False)
 
-engine = create_engine('sqlite:///db/keys.db')
+engine = create_engine('sqlite:///db/users.db')
 
-KeyBase.metadata.create_all(engine)
+UserBase.metadata.create_all(engine)
