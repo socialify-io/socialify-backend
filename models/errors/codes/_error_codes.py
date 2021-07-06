@@ -4,11 +4,12 @@ class Error(object):
     InvalidRepeatPassword = 1
 
     # Login
-    InvalidUsernameOrPassword = 2
+    InvalidUsername = 2
+    InvalidPassword = 3
 
     # Crypto
-    InvalidPublicRSAKey = 3
-    InvalidPasswordEncryption = 4
+    InvalidPublicRSAKey = 4
+    InvalidPasswordEncryption = 5
 
     # Server
-    InternalServerError = 5
+    InternalServerError = 6

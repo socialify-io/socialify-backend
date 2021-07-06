@@ -2,3 +2,4 @@ flask
 pytest
 PyCryptodome
 sqlalchemy
+bcrypt

@@ -19,6 +19,7 @@ from .pass_enc import encrypt_public_key, generate_keys, decrypt_private_key
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from base64 import b64decode, b64encode
+import bcrypt
 
 
 @app.route(f'{route}/register', methods=HTTP_METHODS)
@@ -72,14 +73,18 @@ async def register():
                         errors = [error]).__dict__)
 
         else:
+            """
             enc_pass_sha1 = hashlib.sha1(bytes(password, 'utf-8')).hexdigest()
             enc_pass_sha256 = hashlib.sha256(bytes(enc_pass_sha1, 'utf-8')).hexdigest() 
             enc_pass_sha512 = hashlib.sha512(bytes(enc_pass_sha256, 'utf-8')).hexdigest()
             enc_pass_blake2b = hashlib.blake2b(bytes(enc_pass_sha512, 'utf-8')).hexdigest()
+            """
+
+            hashed_pass = bcrypt.hashpw(bytes(password, 'utf-8'), bcrypt.gensalt())
 
             new_user = User(
                 username=body['username'],
-                password=enc_pass_blake2b
+                password=hashed_pass
                 )
 
             user_session.add(new_user)
