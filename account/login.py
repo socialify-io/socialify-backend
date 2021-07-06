@@ -1,5 +1,7 @@
-from __main__ import app, HTTP_METHODS, route
+from __main__ import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
+from db.keys_db_declarative import KeyBase, Key
+from db.users_db_declarative import UserBase, User
 
 import operator
 
@@ -29,19 +31,13 @@ async def login():
 
     body = request.get_json(force=True)
 
-    con = sql.connect('db/users.db')
-    con_keys = sql.connect('db/keys.db')
-
-    cur = con.cursor()
-    cur_keys = con_keys.cursor()
-
     pub_key_string = body['pubKey']
-    cur_keys.execute(f'SELECT privKey FROM keys WHERE pubKey="{ pub_key_string }"')
-    
-    try:
-        priv_key = cur_keys.fetchone()[0]
 
-    except TypeError:
+    try:
+        priv_key = key_session.query(Key).filter(Key.pub_key == pub_key_string).one()
+        priv_key = priv_key.priv_key
+
+    except:
         error = ApiError(
             code=Error().InvalidPublicRSAKey,
             reason='Invalid public RSA key.'
@@ -64,14 +60,15 @@ async def login():
         return jsonify(ErrorResponse(
             errors=[error]).__dict__)
 
-    con_keys.close()
-
     enc_pass_sha1 = hashlib.sha1(bytes(password, 'utf-8')).hexdigest()
     enc_pass_sha256 = hashlib.sha256(bytes(enc_pass_sha1, 'utf-8')).hexdigest() 
     enc_pass_sha512 = hashlib.sha512(bytes(enc_pass_sha256, 'utf-8')).hexdigest()
     enc_pass_blake2b = hashlib.blake2b(bytes(enc_pass_sha512, 'utf-8')).hexdigest()
 
-    if (body['username'],) in cur.execute('SELECT username FROM users') and (enc_pass_blake2b,) in cur.execute('SELECT password FROM users'):
+    usernames = user_session.query(User.username).all()
+    passwords = user_session.query(User.password).all()
+
+    if (body['username'],) in usernames and (enc_pass_blake2b,) in passwords:
         return jsonify(Response(data={}).__dict__)
     else:
         error = ApiError(
@@ -93,14 +90,13 @@ async def getKey():
     pub_key = key.publickey().exportKey().decode('utf-8')
     priv_key = key.exportKey().decode('utf-8')
 
-    con = sql.connect('db/keys.db')
-    cur = con.cursor()
+    new_key = Key(
+        pub_key = pub_key,
+        priv_key = priv_key
+        )
 
-    cur.execute(
-        f'INSERT INTO keys (pubKey, privKey) VALUES ("{pub_key}", "{priv_key}")')
-    con.commit()
-
-    con.close()
+    key_session.add(new_key)
+    key_session.commit()
 
     response = Response(
         data={

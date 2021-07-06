@@ -1,5 +1,7 @@
-from __main__ import app, HTTP_METHODS, route
+from __main__ import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
+from db.keys_db_declarative import KeyBase, Key
+from db.users_db_declarative import UserBase, User
 
 import sqlite3 as sql
 import hashlib
@@ -26,17 +28,11 @@ async def register():
 
     body = request.get_json(force=True)
 
-    con = sql.connect('db/users.db')
-    con_keys = sql.connect('db/keys.db')
-
-    cur = con.cursor()
-    cur_keys = con_keys.cursor()
-
     pub_key_string = body['pubKey']
-    cur_keys.execute(f'SELECT privKey FROM keys WHERE pubKey="{ pub_key_string }"')
-    
+
     try:
-        priv_key = cur_keys.fetchone()[0]
+        priv_key = key_session.query(Key).filter(Key.pub_key == pub_key_string).one()
+        priv_key = priv_key.priv_key
 
     except TypeError:
         error = ApiError(
@@ -63,13 +59,10 @@ async def register():
 
     repeat_password = decrypt_private_key(body['repeat_password'], priv_key)
 
-    con_keys.close()
-
     if password == repeat_password:
-        con = sql.connect('db/users.db')
-        cur = con.cursor()
+        users = user_session.query(User.username).all()
         
-        if (body['username'],) in cur.execute('SELECT username FROM users'):
+        if (body['username'],) in users:
             error = ApiError(
                 code = Error().InvalidUsername,
                 reason = 'This username is already taken.'
@@ -84,9 +77,13 @@ async def register():
             enc_pass_sha512 = hashlib.sha512(bytes(enc_pass_sha256, 'utf-8')).hexdigest()
             enc_pass_blake2b = hashlib.blake2b(bytes(enc_pass_sha512, 'utf-8')).hexdigest()
 
-            cur.execute(f'INSERT INTO users (username, password) VALUES ("{ body["username"] }", "{ enc_pass_blake2b }")')
-            con.commit()
-            con.close()
+            new_user = User(
+                username=body['username'],
+                password=enc_pass_blake2b
+                )
+
+            user_session.add(new_user)
+            user_session.commit()
 
             return jsonify(Response(data={}).__dict__)
     else:
