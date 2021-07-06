@@ -1,7 +1,7 @@
 from sqlite3.dbapi2 import DatabaseError
 from flask import Flask, render_template, request, jsonify
 
-#models
+# Models
 from models.errors._api_error import ApiError
 
 from models.responses._error_response import ErrorResponse
@@ -14,6 +14,19 @@ HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'T
 
 VERSION = 0.1
 route = f"/api/v{VERSION}"
+
+# Database
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+ 
+from db.keys_db_declarative import Base, Key
+
+engine = create_engine('sqlite:///db/keys.db')
+Base.metadata.bind = engine
+ 
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
+
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -38,4 +51,4 @@ def admin():
 from account import register, login
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

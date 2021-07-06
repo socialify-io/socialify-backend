@@ -1,5 +1,6 @@
-from __main__ import app, HTTP_METHODS, route
+from __main__ import app, HTTP_METHODS, route, session
 from flask import Flask, render_template, request, jsonify
+from db.keys_db_declarative import Base, Key
 
 import sqlite3 as sql
 import hashlib
@@ -27,16 +28,13 @@ async def register():
     body = request.get_json(force=True)
 
     con = sql.connect('db/users.db')
-    con_keys = sql.connect('db/keys.db')
-
     cur = con.cursor()
-    cur_keys = con_keys.cursor()
 
     pub_key_string = body['pubKey']
-    cur_keys.execute(f'SELECT privKey FROM keys WHERE pubKey="{ pub_key_string }"')
-    
+
     try:
-        priv_key = cur_keys.fetchone()[0]
+        priv_key = session.query(Key).filter(Key.pub_key == pub_key_string).one()
+        priv_key = priv_key.priv_key
 
     except TypeError:
         error = ApiError(
@@ -62,8 +60,6 @@ async def register():
             errors=[error]).__dict__)
 
     repeat_password = decrypt_private_key(body['repeat_password'], priv_key)
-
-    con_keys.close()
 
     if password == repeat_password:
         con = sql.connect('db/users.db')
