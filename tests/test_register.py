@@ -1,6 +1,5 @@
 import pytest
 from flask import url_for
-import requests
 import json
 
 import os
