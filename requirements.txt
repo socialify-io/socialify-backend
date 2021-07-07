@@ -1,4 +1,5 @@
 flask
+asgiref
 pytest
 pytest-flask
 PyCryptodome
