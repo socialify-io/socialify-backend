@@ -1,4 +1,4 @@
-from __main__ import app, HTTP_METHODS, route, key_session, user_session
+from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
 from db.keys_db_declarative import KeyBase, Key
 from db.users_db_declarative import UserBase, User
@@ -73,12 +73,6 @@ async def register():
                         errors = [error]).__dict__)
 
         else:
-            """
-            enc_pass_sha1 = hashlib.sha1(bytes(password, 'utf-8')).hexdigest()
-            enc_pass_sha256 = hashlib.sha256(bytes(enc_pass_sha1, 'utf-8')).hexdigest() 
-            enc_pass_sha512 = hashlib.sha512(bytes(enc_pass_sha256, 'utf-8')).hexdigest()
-            enc_pass_blake2b = hashlib.blake2b(bytes(enc_pass_sha512, 'utf-8')).hexdigest()
-            """
 
             hashed_pass = bcrypt.hashpw(bytes(password, 'utf-8'), bcrypt.gensalt())
 

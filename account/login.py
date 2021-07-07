@@ -1,4 +1,4 @@
-from __main__ import app, HTTP_METHODS, route, key_session, user_session
+from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
 from db.keys_db_declarative import KeyBase, Key
 from db.users_db_declarative import UserBase, User

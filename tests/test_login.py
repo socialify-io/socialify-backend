@@ -37,7 +37,8 @@ def test_getkey(client):
 	assert resp.status_code == 200
 	assert json_resp['success'] == True
 
-def test_register(client):
+
+def test_login(client):
 	password = 'test_pass123'
 
 	pub_key = RSA.importKey(key)
@@ -46,12 +47,11 @@ def test_register(client):
 	payload = {
 		'username': 'TestAccount123',
 		'password': enc_pass.decode('utf8'),
-		'repeat_password': enc_pass.decode('utf8'),
 		'pubKey': key
 	}
 
 	resp = client.post(
-		f'{route}/register',
+		f'{route}/login',
 		json=payload
 	)
 
