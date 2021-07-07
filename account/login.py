@@ -3,11 +3,6 @@ from flask import Flask, render_template, request, jsonify
 from db.keys_db_declarative import KeyBase, Key
 from db.users_db_declarative import UserBase, User
 
-import operator
-
-import sqlite3 as sql
-import hashlib
-
 # models
 from models.errors._api_error import ApiError
 
@@ -20,7 +15,6 @@ from models.errors.codes._error_codes import Error
 from .pass_enc import encrypt_public_key, generate_keys, decrypt_private_key
 
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
 from base64 import b64decode, b64encode
 import bcrypt
 
