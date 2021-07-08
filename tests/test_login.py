@@ -10,7 +10,6 @@ from app import route, app
 
 from account.pass_enc import encrypt_public_key, generate_keys, decrypt_private_key
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
 
 @pytest.fixture
 def client():
@@ -18,9 +17,10 @@ def client():
 
     yield client
 
-key = ""
+register_key = ""
+login_key = ""
 
-def test_getkey(client):
+def test_register_getkey(client):
 	resp = client.post(
 		f'{route}/getkey'
 	)
@@ -29,28 +29,28 @@ def test_getkey(client):
 
 	print(json_resp)
 
-	global key
+	global register_key
 
-	key = json_resp['data']['pubKey']
+	register_key = json_resp['data']['pubKey']
 
 	assert resp.status_code == 200
 	assert json_resp['success'] == True
 
-
-def test_login(client):
+def test_register(client):
 	password = 'test_pass123'
 
-	pub_key = RSA.importKey(key)
+	pub_key = RSA.importKey(register_key)
 	enc_pass = encrypt_public_key(password, pub_key)
 
 	payload = {
 		'username': 'TestAccount123',
 		'password': enc_pass.decode('utf8'),
-		'pubKey': key
+		'repeat_password': enc_pass.decode('utf8'),
+		'pubKey': register_key
 	}
 
 	resp = client.post(
-		f'{route}/login',
+		f'{route}/register',
 		json=payload
 	)
 
@@ -61,7 +61,7 @@ def test_login(client):
 	assert resp.status_code == 200
 	assert json_resp['success'] == True
 
-def test_getkey(client):
+def test_login_getkey(client):
 	resp = client.post(
 		f'{route}/getkey'
 	)
@@ -70,28 +70,28 @@ def test_getkey(client):
 
 	print(json_resp)
 
-	global key
+	global login_key
 
-	key = json_resp['data']['pubKey']
+	login_key = json_resp['data']['pubKey']
 
 	assert resp.status_code == 200
 	assert json_resp['success'] == True
 
-def test_register(client):
+
+def test_login(client):
 	password = 'test_pass123'
 
-	pub_key = RSA.importKey(key)
+	pub_key = RSA.importKey(login_key)
 	enc_pass = encrypt_public_key(password, pub_key)
 
 	payload = {
 		'username': 'TestAccount123',
 		'password': enc_pass.decode('utf8'),
-		'repeat_password': enc_pass.decode('utf8'),
-		'pubKey': key
+		'pubKey': login_key
 	}
 
 	resp = client.post(
-		f'{route}/register',
+		f'{route}/login',
 		json=payload
 	)
 
