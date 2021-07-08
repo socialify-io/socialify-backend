@@ -61,6 +61,9 @@ async def login():
         db_password = user_session.query(User.password).filter(User.username == body['username']).one()
 
         if bcrypt.checkpw(password, db_password[0]):
+            key_session.query(Key).filter(Key.pub_key==pub_key_string).delete()
+            key_session.commit()
+            
             return jsonify(Response(data={}).__dict__)
         else:
             error = ApiError(

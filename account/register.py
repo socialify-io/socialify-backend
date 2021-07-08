@@ -80,6 +80,9 @@ async def register():
             user_session.add(new_user)
             user_session.commit()
 
+            key_session.query(Key).filter(Key.pub_key==pub_key_string).delete()
+            key_session.commit()
+
             return jsonify(Response(data={}).__dict__)
     else:
         error = ApiError(
