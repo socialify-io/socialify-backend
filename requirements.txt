@@ -6,3 +6,4 @@ PyCryptodome
 sqlalchemy
 bcrypt
 cryptography
+pytz
