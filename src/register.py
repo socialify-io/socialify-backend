@@ -11,7 +11,7 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 # crypto
-from .pass_enc import encrypt_public_key, generate_keys, decrypt_private_key
+from .RSA_helper import encrypt_public_key, generate_keys, decrypt_private_key
 
 from Crypto.PublicKey import RSA
 from base64 import b64decode, b64encode
@@ -75,7 +75,7 @@ async def register():
             new_user = User(
                 username=body['username'],
                 password=hashed_pass
-                )
+            )
 
             user_session.add(new_user)
             user_session.commit()

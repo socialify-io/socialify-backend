@@ -1,7 +1,8 @@
 from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
 from db.keys_db_declarative import KeyBase, Key
-from db.users_db_declarative import UserBase, User
+from db.users_db_declarative import UserBase, User, Device
+import json
 
 # models
 from models.errors._api_error import ApiError
@@ -12,15 +13,16 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 # crypto
-from .pass_enc import encrypt_public_key, generate_keys, decrypt_private_key
+from ..RSA_helper import encrypt_public_key, generate_keys, decrypt_private_key
 
 from Crypto.PublicKey import RSA
-from base64 import b64decode, b64encode
+import base64
 import bcrypt
+import hashlib
 
 
-@app.route(f'{route}/login', methods=HTTP_METHODS)
-async def login():
+@app.route(f'{route}/newDevice', methods=HTTP_METHODS)
+async def new_device():
     if request.method != 'POST':
         return render_template('what_are_you_looking_for.html')
 
@@ -63,8 +65,33 @@ async def login():
         if bcrypt.checkpw(password, db_password[0]):
             key_session.query(Key).filter(Key.pub_key==pub_key_string).delete()
             key_session.commit()
-            
-            return jsonify(Response(data={}).__dict__)
+
+            sign_keys = generate_keys()
+
+            sign_priv_key = sign_keys.exportKey().decode('utf-8')
+            sign_pub_key = sign_keys.publickey().exportKey().decode('utf-8')
+
+            userId = user_session.query(User.id).filter(User.username == body['username']).one()
+
+            new_device = Device(
+                userId=userId[0],
+                appVersion=body['appVersion'],
+                os=body['os'],
+                pubKey=sign_pub_key,
+                privKey=sign_priv_key,
+                fingerprint=hashlib.sha1(bytes(sign_pub_key, 'utf-8')).hexdigest(),
+                deviceName=body['deviceName'],
+                timestamp=body['timestamp']
+            )   
+
+            user_session.add(new_device)
+            user_session.commit()
+
+            data = {
+                "pubKey": sign_pub_key
+            }
+
+            return jsonify(Response(data=data).__dict__)
         else:
             error = ApiError(
             code=Error().InvalidPassword,
@@ -81,29 +108,3 @@ async def login():
 
         return jsonify(ErrorResponse(
             errors=[error]).__dict__)
-
-@app.route(f'{route}/getkey', methods=HTTP_METHODS)
-async def getKey():
-    if request.method != 'POST':
-        return render_template('what_are_you_looking_for.html')
-
-    key = generate_keys()
-
-    pub_key = key.publickey().exportKey().decode('utf-8')
-    priv_key = key.exportKey().decode('utf-8')
-
-    new_key = Key(
-        pub_key = pub_key,
-        priv_key = priv_key
-        )
-
-    key_session.add(new_key)
-    key_session.commit()
-
-    response = Response(
-        data={
-            "pubKey": f'{pub_key}'
-        }
-    )
-
-    return jsonify(response.__dict__)

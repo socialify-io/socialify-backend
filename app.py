@@ -1,3 +1,9 @@
+"""
+=======================================TO DO=======================================
+    - error code response for not founded RSA key on registering account
+===================================================================================
+"""
+
 from sqlite3.dbapi2 import DatabaseError
 from flask import Flask, render_template, request, jsonify
 
@@ -22,14 +28,14 @@ from sqlalchemy.orm import sessionmaker
 from db.keys_db_declarative import KeyBase, Key
 from db.users_db_declarative import UserBase, User
 
-key_engine = create_engine('sqlite:///db/keys.db')
+key_engine = create_engine('sqlite:///db/keys.db', connect_args={'check_same_thread': False})
 KeyBase.metadata.bind = key_engine
  
 key_DBSession = sessionmaker(bind=key_engine)
 key_session = key_DBSession()
 
 
-user_engine = create_engine('sqlite:///db/users.db')
+user_engine = create_engine('sqlite:///db/users.db', connect_args={'check_same_thread': False})
 UserBase.metadata.bind = user_engine
  
 user_DBSession = sessionmaker(bind=user_engine)
@@ -55,7 +61,8 @@ def admin():
     return render_template('admin.html')
 """
 
-from account import register, login
+from src import get_key, register
+from src.req_sign import new_device
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
