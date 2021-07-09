@@ -19,7 +19,7 @@ conn.execute('''CREATE TABLE devices
         privKey TEXT NOT NULL,
         fingerprint VARCHAR(40) NOT NULL,
         deviceName TEXT NOT NULL,
-        timestamp INTEGER NOT NULL
+        timestamp TIMESTAMP NOT NULL
      )''')
 
 conn.close()

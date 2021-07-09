@@ -2,7 +2,10 @@ from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
 from db.keys_db_declarative import KeyBase, Key
 from db.users_db_declarative import UserBase, User, Device
+
 import json
+from datetime import datetime
+import pytz
 
 # models
 from models.errors._api_error import ApiError
@@ -73,6 +76,8 @@ async def new_device():
 
             userId = user_session.query(User.id).filter(User.username == body['username']).one()
 
+            date = datetime.utcfromtimestamp(body['timestamp']).replace(tzinfo=pytz.utc)
+
             new_device = Device(
                 userId=userId[0],
                 appVersion=body['appVersion'],
@@ -81,7 +86,7 @@ async def new_device():
                 privKey=sign_priv_key,
                 fingerprint=hashlib.sha1(bytes(sign_pub_key, 'utf-8')).hexdigest(),
                 deviceName=body['deviceName'],
-                timestamp=body['timestamp']
+                timestamp=date
             )   
 
             user_session.add(new_device)
