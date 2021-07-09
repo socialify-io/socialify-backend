@@ -55,6 +55,11 @@ def internal_server_error(e):
     return jsonify(ErrorResponse(
         errors=[error]).__dict__)
 
+@app.after_request
+def add_header(response):
+    response.headers['Server'] = 'Socialify/0.1'
+    return response
+
 """
 @app.route('/admin', methods=HTTP_METHODS)
 def admin():
