@@ -67,6 +67,28 @@ def test_register(client):
 	pub_key = RSA.importKey(key)
 	enc_pass = encrypt_public_key(password, pub_key)
 
+	timestamp = int(datetime.datetime.now().timestamp())
+
+	auth_token_begin_header = '$begin-register$'
+	auth_token_end_header = '$end-register$'
+
+	os = 'iOS_14.6'
+	app_version = '0.1'
+	user_agent = 'Socialify-iOS'
+
+	auth_token = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
+
+	auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
+	
+	headers = {
+		'Content-Type': 'applictaion/json',
+		'User-Agent': user_agent,
+		'OS': os,
+		'Timestamp': timestamp,
+		'AppVersion': app_version,
+		'AuthToken': auth_token_hashed
+	}
+
 	payload = {
 		'username': 'TestAccount123',
 		'password': enc_pass.decode('utf8'),
@@ -76,6 +98,7 @@ def test_register(client):
 
 	resp = client.post(
 		f'{route}/register',
+		headers=headers,
 		json=payload
 	)
 
