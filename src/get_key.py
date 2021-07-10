@@ -39,11 +39,6 @@ async def get_key():
 
     auth_token_check = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
 
-    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    print(auth_token)
-    print(auth_token_check)
-    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-
     if bcrypt.checkpw(auth_token_check, auth_token):
         key = generate_keys()
 
