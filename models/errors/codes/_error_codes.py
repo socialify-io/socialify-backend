@@ -13,3 +13,7 @@ class Error(object):
 
     # Server
     InternalServerError = 6
+
+    # Global
+    InvalidAuthToken = 7
+    InvalidHeaders = 8
