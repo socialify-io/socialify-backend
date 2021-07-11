@@ -3,6 +3,7 @@ from flask import url_for
 import json
 import bcrypt
 import hashlib
+from Crypto.Signature import PKCS1_PSS
 
 import os
 import sys
@@ -10,8 +11,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import route, app
 
-from src.RSA_helper import encrypt_public_key, generate_keys, decrypt_private_key
+from src.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Hash import SHA
 
 import datetime
 
@@ -23,9 +26,9 @@ def client():
 
 def test_get_devices(client):
     with open ("tests/key.pem", "r") as f:
-        pub_key_string = f.read()
+        priv_key_string = f.read()
 
-    pub_key = RSA.importKey(pub_key_string)
+    priv_key = RSA.importKey(priv_key_string)
 
     timestamp = int(datetime.datetime.now().timestamp())
 
@@ -47,27 +50,31 @@ def test_get_devices(client):
         'Timestamp': timestamp,
         'AppVersion': app_version,
         'AuthToken': auth_token_hashed.decode(),
-        'Fingerprint': hashlib.sha1(bytes(pub_key_string, 'utf-8')).hexdigest()
+        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()
     }
 
     payload = {}
 
-    payload_string = json.dumps(payload)
-    payload_hashed = hashlib.sha1(bytes(payload_string, 'utf-8'))
-    headers_string = json.dumps(headers)
-    headers_hashed = hashlib.sha1(bytes(headers_string, 'utf-8'))
-
     signature_json = {
-        'headers': headers_hashed.hexdigest(),
-        'body': payload_hashed.hexdigest(),
+        'headers': headers,
+        'body': payload,
         'timestamp': timestamp,
         'authToken': auth_token_hashed.decode(),
         'endpointUrl': f'{route}/getDevices'
     }
 
+    """
     signature_string = json.dumps(signature_json)
-    signature = encrypt_public_key(signature_string, pub_key)
-    headers.update({'Signature': signature})
+    signature = encrypt_rsa(signature_string, priv_key)
+    """
+
+    hasher = SHA.new(bytes(json.dumps(signature_json), 'utf-8'))
+    signer = PKCS1_PSS.new(priv_key)
+    signature = signer.sign(hasher).hex()
+    print(hasher)
+    headers.update({'Signature': str(signature)})
+
+    #print(headers)
 
     resp = client.post(
         f'{route}/getDevices',

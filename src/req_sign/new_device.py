@@ -16,7 +16,7 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 # crypto
-from ..RSA_helper import encrypt_public_key, generate_keys, decrypt_private_key
+from ..RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 
 from Crypto.PublicKey import RSA
 import base64
@@ -70,7 +70,7 @@ async def new_device():
         priv_key = RSA.importKey(priv_key)
 
         try:
-            password = bytes(decrypt_private_key(body['password'], priv_key), 'utf-8')
+            password = bytes(decrypt_rsa(body['password'], priv_key), 'utf-8')
 
         except:
             error = ApiError(
@@ -99,7 +99,7 @@ async def new_device():
                     appVersion=body['device']['appVersion'],
                     os=body['device']['os'],
                     pubKey=body['device']['signPubKey'],
-                    fingerprint=hashlib.sha1(bytes(body['device']['signPubKey'], 'utf-8')).hexdigest(),
+                    fingerprint=body['device']['fingerprint'],
                     deviceName=body['device']['deviceName'],
                     timestamp=date
                 )   

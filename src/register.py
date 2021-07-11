@@ -11,7 +11,7 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 # crypto
-from .RSA_helper import encrypt_public_key, generate_keys, decrypt_private_key
+from .RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 
 from Crypto.PublicKey import RSA
 from base64 import b64decode, b64encode
@@ -64,7 +64,7 @@ async def register():
         priv_key = RSA.importKey(priv_key)
 
         try:
-            password = decrypt_private_key(body['password'], priv_key)
+            password = decrypt_rsa(body['password'], priv_key)
 
         except:
             error = ApiError(
@@ -75,7 +75,7 @@ async def register():
             return jsonify(ErrorResponse(
                 errors=[error]).__dict__)
 
-        repeat_password = decrypt_private_key(body['repeat_password'], priv_key)
+        repeat_password = decrypt_rsa(body['repeat_password'], priv_key)
 
         if password == repeat_password:
             users = user_session.query(User.username).all()

@@ -2,6 +2,7 @@ import pytest
 from flask import url_for
 import json
 import bcrypt
+import hashlib
 
 import os
 import sys
@@ -9,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import route, app
 
-from src.RSA_helper import encrypt_public_key, generate_keys, decrypt_private_key
+from src.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 from Crypto.PublicKey import RSA
 
 import datetime
@@ -66,7 +67,7 @@ def test_new_device(client):
 	password = 'test_pass123'
 
 	pub_key = RSA.importKey(key)
-	enc_pass = encrypt_public_key(password, pub_key)
+	enc_pass = encrypt_rsa(password, pub_key)
 
 	timestamp = int(datetime.datetime.now().timestamp())
 
@@ -103,7 +104,8 @@ def test_new_device(client):
 			'timestamp': timestamp,
 			'appVersion': '0.1',
 			'os': 'iOS 14.6',
-			'signPubKey': pub_key
+			'signPubKey': pub_key,
+			'fingerprint': hashlib.sha1(bytes(priv_key, 'utf-8')).hexdigest()
 		}
 	}
 
@@ -118,7 +120,7 @@ def test_new_device(client):
 	print(json_resp)
 
 	f = open("tests/key.pem", "w")
-	f.write(str(pub_key))
+	f.write(str(priv_key))
 	f.close()
 
 	assert resp.status_code == 200

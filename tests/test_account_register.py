@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import route, app
 
-from src.RSA_helper import encrypt_public_key, generate_keys, decrypt_private_key
+from src.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 from Crypto.PublicKey import RSA
 
 @pytest.fixture
@@ -65,7 +65,7 @@ def test_register(client):
     password = 'test_pass123'
 
     pub_key = RSA.importKey(key)
-    enc_pass = encrypt_public_key(password, pub_key)
+    enc_pass = encrypt_rsa(password, pub_key)
 
     timestamp = int(datetime.datetime.now().timestamp())
 

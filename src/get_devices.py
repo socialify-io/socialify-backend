@@ -1,7 +1,7 @@
 from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
 from db.users_db_declarative import UserBase, User, Device
-from .RSA_helper import encrypt_public_key, generate_keys, decrypt_private_key
+from .RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa, verify_sign
 
 from Crypto.PublicKey import RSA
 from base64 import b64decode, b64encode
@@ -69,34 +69,23 @@ async def get_devices():
             return jsonify(ErrorResponse(
                         errors = [error]).__dict__)
 
-        priv_key = user_session.query(Device.privKey).filter(Device.userId == userId, Device.fingerprint == fingerprint).one()
-        priv_key = priv_key[0]
-        priv_key = RSA.importKey(priv_key)
-
-        signature_decrypted = decrypt_private_key(signature, priv_key)
-
-        headers_string = json.dumps(headers)
-        headers_encrypted = hashlib.sha1(bytes(headers_string, 'utf-8')).hexdigest()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == fingerprint).one()
+        pub_key = pub_key[0]
+        pub_key = RSA.importKey(pub_key)
         
         body = request.get_json()
         if body == None:
             body = {}
 
-        body = json.dumps(body)
-        body_encrypted = hashlib.sha1(bytes(body, 'utf-8')).hexdigest()
-
         signature_json_check = {
-            'headers': headers_encrypted,
-            'body': body_encrypted,
+            'headers': headers,
+            'body': body,
             'timestamp': timestamp,
             'authToken': auth_token,
             'endpointUrl': f'{route}/getDevices'
         }
 
-        print(signature_json_check)
-        print(json.loads(signature_decrypted))
-
-        if signature_json_check == json.loads(signature_decrypted):
+        if verify_sign(signature_json_check, signature, pub_key):
             devices_db = user_session.query(Device.deviceName).filter(Device.userId == userId).all()
             devices = []
 
