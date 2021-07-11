@@ -37,5 +37,7 @@ jobs:
         python db/create_users_db.py
     - name: Test with pytest
       run: |
-        pytest
+        pytest tests/test_account_register.py
+        pytest tests/test_new_device.py
+        pytest tests/test_get_devices.py
         
