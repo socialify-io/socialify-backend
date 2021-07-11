@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.vscode/
+*.DS_Store
 
 # C extensions
 *.so
@@ -129,5 +131,5 @@ dmypy.json
 .pyre/
 
 *.db
-
 QUICK_ENC.py
+tests/key.pem

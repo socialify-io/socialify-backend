@@ -3,7 +3,7 @@ from Crypto.Cipher import PKCS1_OAEP
 import base64
 
 def generate_keys():
-    modulus_length = 2048
+    modulus_length = 3072
     key = RSA.generate(modulus_length)
     return key
 

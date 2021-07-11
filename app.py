@@ -66,7 +66,7 @@ def admin():
     return render_template('admin.html')
 """
 
-from src import get_key, register
+from src import get_key, register, get_devices
 from src.req_sign import new_device
 
 if __name__ == '__main__':

@@ -14,6 +14,8 @@ class Error(object):
     # Server
     InternalServerError = 6
 
-    # Global
+    # Request sign
     InvalidAuthToken = 7
     InvalidHeaders = 8
+    InvalidFingerprint = 9
+    InvalidSignature = 10

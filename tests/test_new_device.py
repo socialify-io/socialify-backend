@@ -16,17 +16,17 @@ import datetime
 
 @pytest.fixture
 def client():
-    client = app.test_client()
+	client = app.test_client()
 
-    yield client
+	yield client
 
 key = ""
 
 def test_login_getkey(client):
 	timestamp = int(datetime.datetime.now().timestamp())
 
-	auth_token_begin_header = '$begin-getkey$'
-	auth_token_end_header = '$end-getkey$'
+	auth_token_begin_header = '$begin-getKey$'
+	auth_token_end_header = '$end-getKey$'
 
 	os = 'iOS_14.6'
 	app_version = '0.1'
@@ -46,7 +46,7 @@ def test_login_getkey(client):
 	}
 
 	resp = client.post(
-		f'{route}/getkey',
+		f'{route}/getKey',
 		headers=headers
 	)
 
@@ -109,6 +109,10 @@ def test_new_device(client):
 	json_resp = json.loads(resp.data.decode('utf8'))
 
 	print(json_resp)
+
+	f = open("tests/key.pem", "w")
+	f.write(str(json_resp['data']['pubKey']))
+	f.close()
 
 	assert resp.status_code == 200
 	assert json_resp['success'] == True

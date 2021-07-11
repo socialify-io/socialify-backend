@@ -13,10 +13,10 @@ from models.responses._response import Response
 
 from models.errors.codes._error_codes import Error
 
-auth_token_begin_header = '$begin-getkey$'
-auth_token_end_header = '$end-getkey$'
+auth_token_begin_header = '$begin-getKey$'
+auth_token_end_header = '$end-getKey$'
 
-@app.route(f'{route}/getkey', methods=HTTP_METHODS)
+@app.route(f'{route}/getKey', methods=HTTP_METHODS)
 async def get_key():
     if request.method != 'POST':
         return render_template('what_are_you_looking_for.html')
