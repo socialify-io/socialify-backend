@@ -90,14 +90,21 @@ def test_new_device(client):
 		'AuthToken': auth_token_hashed
 	}
 
+	keys = generate_keys()
+	priv_key = keys.exportKey().decode('utf-8')
+	pub_key = keys.publickey().exportKey().decode('utf-8')
+
 	payload = {
 		'username': 'TestAccount123',
 		'password': enc_pass.decode('utf8'),
 		'pubKey': key,
-		'deviceName': 'Unit test',
-		'timestamp': timestamp,
-		'appVersion': '0.1',
-		'os': 'iOS 14.6'
+		'device': {
+			'deviceName': 'Unit test',
+			'timestamp': timestamp,
+			'appVersion': '0.1',
+			'os': 'iOS 14.6',
+			'signPubKey': pub_key
+		}
 	}
 
 	resp = client.post(
@@ -111,7 +118,7 @@ def test_new_device(client):
 	print(json_resp)
 
 	f = open("tests/key.pem", "w")
-	f.write(str(json_resp['data']['pubKey']))
+	f.write(str(pub_key))
 	f.close()
 
 	assert resp.status_code == 200

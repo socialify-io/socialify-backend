@@ -22,7 +22,7 @@ def client():
     yield client
 
 def test_get_devices(client):
-    with open ("key.pem", "r") as f:
+    with open ("tests/key.pem", "r") as f:
         pub_key_string = f.read()
 
     pub_key = RSA.importKey(pub_key_string)
@@ -77,6 +77,6 @@ def test_get_devices(client):
     json_resp = json.loads(resp.data.decode('utf8'))
 
     print(json_resp)
- 
+
     assert resp.status_code == 200
     assert json_resp['success'] == True

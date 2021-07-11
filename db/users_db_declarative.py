@@ -25,7 +25,6 @@ class Device(UserBase):
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
     pubKey = Column(TEXT, nullable=False)
-    privKey = Column(TEXT, nullable=False)
     fingerprint = Column(VARCHAR(40), nullable=False)
     deviceName = Column(TEXT, nullable=False)
     timestamp = Column(TIMESTAMP, nullable=False)

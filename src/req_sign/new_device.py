@@ -90,34 +90,24 @@ async def new_device():
                 key_session.query(Key).filter(Key.pub_key==pub_key_string).delete()
                 key_session.commit()
 
-                sign_keys = generate_keys()
-
-                sign_priv_key = sign_keys.exportKey().decode('utf-8')
-                sign_pub_key = sign_keys.publickey().exportKey().decode('utf-8')
-
                 userId = user_session.query(User.id).filter(User.username == body['username']).one()
 
-                date = datetime.utcfromtimestamp(body['timestamp']).replace(tzinfo=pytz.utc)
+                date = datetime.utcfromtimestamp(body['device']['timestamp']).replace(tzinfo=pytz.utc)
 
                 new_device = Device(
                     userId=userId[0],
-                    appVersion=body['appVersion'],
-                    os=body['os'],
-                    pubKey=sign_pub_key,
-                    privKey=sign_priv_key,
-                    fingerprint=hashlib.sha1(bytes(sign_pub_key, 'utf-8')).hexdigest(),
-                    deviceName=body['deviceName'],
+                    appVersion=body['device']['appVersion'],
+                    os=body['device']['os'],
+                    pubKey=body['device']['signPubKey'],
+                    fingerprint=hashlib.sha1(bytes(body['device']['signPubKey'], 'utf-8')).hexdigest(),
+                    deviceName=body['device']['deviceName'],
                     timestamp=date
                 )   
 
                 user_session.add(new_device)
                 user_session.commit()
 
-                data = {
-                    "pubKey": sign_pub_key
-                }
-
-                return jsonify(Response(data=data).__dict__)
+                return jsonify(Response(data={}).__dict__)
             else:
                 error = ApiError(
                 code=Error().InvalidPassword,
