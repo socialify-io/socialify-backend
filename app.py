@@ -14,6 +14,9 @@ from models.responses._error_response import ErrorResponse
 from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
+import time
+import threading
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
 HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']
@@ -66,8 +69,8 @@ def admin():
     return render_template('admin.html')
 """
 
-from src import get_key, register, get_devices
-from src.req_sign import new_device
+from src.endpoints import get_key, register, get_devices
+from src.endpoints import new_device
 
 if __name__ == '__main__':
     app.run()

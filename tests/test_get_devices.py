@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import route, app
 
-from src.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
+from src.helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Hash import SHA
@@ -63,15 +63,10 @@ def test_get_devices(client):
         'endpointUrl': f'{route}/getDevices'
     }
 
-    """
-    signature_string = json.dumps(signature_json)
-    signature = encrypt_rsa(signature_string, priv_key)
-    """
-
-    hasher = SHA.new(bytes(json.dumps(signature_json), 'utf-8'))
+    digest = SHA.new(bytes(json.dumps(signature_json), 'utf-8'))
     signer = PKCS1_PSS.new(priv_key)
-    signature = signer.sign(hasher).hex()
-    print(hasher)
+    signature = signer.sign(digest).hex()
+    print(digest)
     headers.update({'Signature': str(signature)})
 
     #print(headers)

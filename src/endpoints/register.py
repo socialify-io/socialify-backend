@@ -11,7 +11,7 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 # crypto
-from .RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
+from ..helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 
 from Crypto.PublicKey import RSA
 from base64 import b64decode, b64encode

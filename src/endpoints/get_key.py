@@ -1,7 +1,7 @@
 from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
 from db.keys_db_declarative import KeyBase, Key
-from .RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
+from ..helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 
 import bcrypt
 

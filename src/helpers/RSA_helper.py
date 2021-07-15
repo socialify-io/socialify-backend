@@ -25,9 +25,9 @@ def decrypt_rsa(encoded_encrypted_msg, key):
 
 def verify_sign(data_to_verify, signature, key):
     verifier = PKCS1_PSS.new(key)
-    hasher = SHA.new(bytes(json.dumps(data_to_verify), 'utf-8'))
-    print(hasher)
-    if verifier.verify(hasher, bytes.fromhex(signature)):
+    digest = SHA.new(bytes(json.dumps(data_to_verify), 'utf-8'))
+    print(digest)
+    if verifier.verify(digest, bytes.fromhex(signature)):
         return True
     else:
         return False

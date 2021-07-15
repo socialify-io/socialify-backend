@@ -1,7 +1,7 @@
 from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
 from db.users_db_declarative import UserBase, User, Device
-from .RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa, verify_sign
+from ..helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa, verify_sign
 
 from Crypto.PublicKey import RSA
 from base64 import b64decode, b64encode

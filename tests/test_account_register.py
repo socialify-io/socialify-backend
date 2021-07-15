@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import route, app
 
-from src.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
+from src.helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 from Crypto.PublicKey import RSA
 
 @pytest.fixture
