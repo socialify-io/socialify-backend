@@ -1,9 +1,3 @@
-"""
-=======================================TO DO=======================================
-    - error code response for invalid RSA key on registering account
-===================================================================================
-"""
-
 from sqlite3.dbapi2 import DatabaseError
 from flask import Flask, render_template, request, jsonify
 
