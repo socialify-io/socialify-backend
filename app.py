@@ -1,6 +1,6 @@
 """
 =======================================TO DO=======================================
-    - error code response for not founded RSA key on registering account
+    - error code response for invalid RSA key on registering account
 ===================================================================================
 """
 
