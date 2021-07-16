@@ -18,6 +18,7 @@ conn.execute('''CREATE TABLE devices
         pubKey TEXT NOT NULL,
         fingerprint VARCHAR(40) NOT NULL,
         deviceName TEXT NOT NULL,
+        deviceIP VARCHAR(15) NOT NULL,
         timestamp TIMESTAMP NOT NULL
      )''')
 

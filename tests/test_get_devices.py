@@ -7,6 +7,7 @@ from Crypto.Signature import PKCS1_PSS
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import route, app
@@ -18,14 +19,16 @@ from Crypto.Hash import SHA
 
 import datetime
 
+
 @pytest.fixture
 def client():
     client = app.test_client()
 
     yield client
 
+
 def test_get_devices(client):
-    with open ("tests/key.pem", "r") as f:
+    with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
     priv_key = RSA.importKey(priv_key_string)
@@ -39,7 +42,8 @@ def test_get_devices(client):
     app_version = '0.1'
     user_agent = 'Socialify-iOS'
 
-    auth_token = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
+    auth_token = bytes(
+        f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
 
     auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
 
@@ -69,11 +73,11 @@ def test_get_devices(client):
     print(digest)
     headers.update({'Signature': str(signature)})
 
-    #print(headers)
+    # print(headers)
 
     resp = client.post(
         f'{route}/getDevices',
-		headers=headers
+        headers=headers
     )
 
     json_resp = json.loads(resp.data.decode('utf8'))
