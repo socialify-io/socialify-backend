@@ -7,6 +7,7 @@ import bcrypt
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import route, app
@@ -14,13 +15,16 @@ from app import route, app
 from src.helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 from Crypto.PublicKey import RSA
 
+
 @pytest.fixture
 def client():
     client = app.test_client()
 
     yield client
 
+
 key = ""
+
 
 def test_register_getkey(client):
     timestamp = int(datetime.datetime.now().timestamp())
@@ -32,10 +36,11 @@ def test_register_getkey(client):
     app_version = '0.1'
     user_agent = 'Socialify-iOS'
 
-    auth_token = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
+    auth_token = bytes(
+        f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
 
     auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
-    
+
     headers = {
         'Content-Type': 'applictaion/json',
         'User-Agent': user_agent,
@@ -61,6 +66,7 @@ def test_register_getkey(client):
     assert resp.status_code == 200
     assert json_resp['success'] == True
 
+
 def test_register(client):
     password = 'test_pass123'
 
@@ -76,10 +82,11 @@ def test_register(client):
     app_version = '0.1'
     user_agent = 'Socialify-iOS'
 
-    auth_token = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
+    auth_token = bytes(
+        f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
 
     auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
-    
+
     headers = {
         'Content-Type': 'applictaion/json',
         'User-Agent': user_agent,
