@@ -28,7 +28,7 @@ class Device(UserBase):
     os = Column(TEXT, nullable=False)
     pubKey = Column(TEXT, nullable=False)
     fingerprint = Column(VARCHAR(40), nullable=False)
-    deviceName = Column(VARCHAR(15), nullable=False)
+    deviceName = Column(TEXT, nullable=False)
     deviceIP = Column(VARCHAR(15), nullable=False)
     timestamp = Column(TIMESTAMP, nullable=False)
 
