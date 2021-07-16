@@ -86,7 +86,7 @@ async def get_devices():
         }
 
         if verify_sign(signature_json_check, signature, pub_key):
-            devices_db = user_session.query(Device.deviceName).filter(Device.userId == userId).all()
+            devices_db = user_session.query(Device).filter(Device.userId == userId).all()
             devices = []
 
             for device in devices_db:
