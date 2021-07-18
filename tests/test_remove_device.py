@@ -101,7 +101,6 @@ def test_remove_device(client):
     # pub_key = keys.publickey().exportKey().decode('utf-8')
 
     payload = {
-        'pubKey': key,
         'device': {
             'deviceName': 'Unit test',
             'fingerprint': '5f3c827876d88ef1358e38addd43ef4a6855c52d'
