@@ -19,3 +19,4 @@ class Error(object):
     InvalidHeaders = 8
     InvalidFingerprint = 9
     InvalidSignature = 10
+    InvalidRequest = 11
