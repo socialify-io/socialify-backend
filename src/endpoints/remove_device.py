@@ -71,7 +71,7 @@ async def remove_device():
 
             else:
                 error = ApiError(
-                    code=Error.InvalidRequest,
+                    code=Error.InvalidRequestPayload,
                     reason='Invalid credentials.'
                 ).__dict__
 
@@ -79,7 +79,7 @@ async def remove_device():
                     errors=[error]).__dict__)
         else:
             error = ApiError(
-                code=Error.InvalidRequest,
+                code=Error.InvalidRequestPayload,
                 reason='Invalid credentials.'
             ).__dict__
 
