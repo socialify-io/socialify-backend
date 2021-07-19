@@ -13,6 +13,8 @@ from app import route, app
 
 from src.helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_PSS
+from Crypto.Hash import SHA
 
 import datetime
 
@@ -24,6 +26,10 @@ def client():
     yield client
 
 def test_remove_device(client):
+    with open("tests/key.pem", "r") as f:
+        priv_key_string = f.read()
+
+    priv_key = RSA.importKey(priv_key_string)
 
     timestamp = int(datetime.datetime.now().timestamp())
 
@@ -40,24 +46,37 @@ def test_remove_device(client):
     auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
 
     headers = {
-        'Content-Type': 'applictaion/json',
+        'Content-Type': 'application/json',
         'User-Agent': user_agent,
         'OS': os,
-        'Timestamp': timestamp,
+        'Timestamp': int(timestamp),
         'AppVersion': app_version,
-        'AuthToken': auth_token_hashed
+        'AuthToken': auth_token_hashed.decode(),
+        'Fingerprint': 'ae04ecd3c68a52b7927ec1a883f7791626552f83'
     }
-
-    #keys = generate_keys()
-    #priv_key = keys.exportKey().decode('utf-8')
-    # pub_key = keys.publickey().exportKey().decode('utf-8')
 
     payload = {
         'device': {
             'deviceName': 'Unit test',
-            'fingerprint': '5f3c827876d88ef1358e38addd43ef4a6855c52d'
+            'fingerprint': 'ae04ecd3c68a52b7927ec1a883f7791626552f83'
         }
     }
+
+    signature_json = {
+        'headers': headers,
+        'body': payload,
+        'timestamp': timestamp,
+        'authToken': auth_token.decode(),
+        'endpointUrl': f'{route}/removeDevice'
+    }
+
+    digest = SHA.new(bytes(json.dumps(signature_json), 'utf-8'))
+    signer = PKCS1_PSS.new(priv_key)
+    signature = signer.sign(digest).hex()
+    print(digest)
+    headers.update({'Signature': str(signature)})
+
+    # print(signature_json)
 
     resp = client.post(
         f'{route}/removeDevice',
@@ -68,10 +87,6 @@ def test_remove_device(client):
     json_resp = json.loads(resp.data.decode('utf8'))
 
     print(json_resp)
-
-    #f = open("tests/key.pem", "w")
-    #f.write(str(priv_key))
-    #f.close()
 
     assert resp.status_code == 200
     assert json_resp['success'] == True
