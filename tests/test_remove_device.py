@@ -23,15 +23,12 @@ def client():
 
     yield client
 
+def test_remove_device(client):
 
-key = ""
-
-
-def test_login_getkey(client):
     timestamp = int(datetime.datetime.now().timestamp())
 
-    auth_token_begin_header = '$begin-getKey$'
-    auth_token_end_header = '$end-getKey$'
+    auth_token_begin_header = '$begin-removeDevice$'
+    auth_token_end_header = '$end-removeDevice$'
 
     os = 'iOS_14.6'
     app_version = '0.1'
@@ -51,53 +48,8 @@ def test_login_getkey(client):
         'AuthToken': auth_token_hashed
     }
 
-    resp = client.post(
-        f'{route}/getKey',
-        headers=headers
-    )
-
-    json_resp = json.loads(resp.data.decode('utf8'))
-
-    print(json_resp)
-
-    global key
-
-    key = json_resp['data']['pubKey']
-
-    assert resp.status_code == 200
-    assert json_resp['success'] == True
-
-
-def test_remove_device(client):
-    password = 'test_pass123'
-
-    pub_key = RSA.importKey(key)
-    enc_pass = encrypt_rsa(password, pub_key)
-
-    timestamp = int(datetime.datetime.now().timestamp())
-
-    auth_token_begin_header = '$begin-removeDevice$'
-    auth_token_end_header = '$end-removeDevice$'
-
-    os = 'iOS_14.6'
-    app_version = '0.1'
-    user_agent = 'Socialify-iOS'
-
-    auth_token = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
-
-    auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
-
-    headers = {
-        'Content-Type': 'applictaion/json',
-        'User-Agent': user_agent,
-        'OS': os,
-        'Timestamp': timestamp,
-        'AppVersion': app_version,
-        'AuthToken': auth_token_hashed
-    }
-
-    keys = generate_keys()
-    priv_key = keys.exportKey().decode('utf-8')
+    #keys = generate_keys()
+    #priv_key = keys.exportKey().decode('utf-8')
     # pub_key = keys.publickey().exportKey().decode('utf-8')
 
     payload = {
@@ -117,9 +69,9 @@ def test_remove_device(client):
 
     print(json_resp)
 
-    f = open("tests/key.pem", "w")
-    f.write(str(priv_key))
-    f.close()
+    #f = open("tests/key.pem", "w")
+    #f.write(str(priv_key))
+    #f.close()
 
     assert resp.status_code == 200
     assert json_resp['success'] == True
