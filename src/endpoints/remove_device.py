@@ -69,8 +69,7 @@ async def remove_device():
           errors=[error]).__dict__)
     """
 
-    auth_token_check = bytes(
-        f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
+    auth_token_check = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
 
 
     body = request.get_json(force=True)
@@ -107,13 +106,14 @@ async def remove_device():
         # todo
         if verify_sign(signature_json_check, signature, pub_key):
             try:
-                
+                user_session.query(Device).filter(Device.fingerprint == fingerprint, Device.deviceName == body['device']['deviceName']).delete()
+                user_session.commit()
 
                 return jsonify(Response(data={}).__dict__)
             except:
                 error = ApiError(
                     code=Error.InvalidRequestPayload,
-                    reason='Some params in payload is not valid.'
+                    reason='Some params in payload are not valid.'
                 ).__dict__
 
                 return jsonify(ErrorResponse(
