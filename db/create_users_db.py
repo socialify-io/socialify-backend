@@ -19,7 +19,8 @@ conn.execute('''CREATE TABLE devices
         fingerprint VARCHAR(40) NOT NULL,
         deviceName TEXT NOT NULL,
         deviceIP VARCHAR(15) NOT NULL,
-        timestamp TIMESTAMP NOT NULL
+        timestamp TIMESTAMP NOT NULL,
+        last_active TIMESTAMP NOT NULL
      )''')
 
 conn.close()

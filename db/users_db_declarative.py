@@ -31,6 +31,7 @@ class Device(UserBase):
     deviceName = Column(TEXT, nullable=False)
     deviceIP = Column(VARCHAR(15), nullable=False)
     timestamp = Column(TIMESTAMP, nullable=False)
+    last_active = Column(TIMESTAMP, nullable=False)
 
 
 engine = create_engine('sqlite:///db/users.db')

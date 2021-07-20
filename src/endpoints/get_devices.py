@@ -94,12 +94,12 @@ async def get_devices():
                     "deviceName": device.deviceName,
                     "deviceIP": device.deviceIP,
                     "os": device.os,
-                    "deviceCreationDate": device.timestamp
+                    "deviceCreationDate": device.timestamp,
+                    "deviceLastActive": device.last_active
                 }
                 devices.append(device_json)
 
             return jsonify(Response(data=devices).__dict__)
-
         else:
             error = ApiError(
                 code = Error().InvalidSignature,
