@@ -49,16 +49,16 @@ def test_remove_device(client):
         'Content-Type': 'application/json',
         'User-Agent': user_agent,
         'OS': os,
-        'Timestamp': int(timestamp),
+        'Timestamp': timestamp,
         'AppVersion': app_version,
         'AuthToken': auth_token_hashed.decode(),
-        'Fingerprint': 'ae04ecd3c68a52b7927ec1a883f7791626552f83'
+        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()
     }
 
     payload = {
         'device': {
             'deviceName': 'Unit test',
-            'fingerprint': 'ae04ecd3c68a52b7927ec1a883f7791626552f83'
+            'fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()
         }
     }
 
@@ -66,17 +66,14 @@ def test_remove_device(client):
         'headers': headers,
         'body': payload,
         'timestamp': timestamp,
-        'authToken': auth_token.decode(),
+        'authToken': auth_token_hashed.decode(),
         'endpointUrl': f'{route}/removeDevice'
     }
 
     digest = SHA.new(bytes(json.dumps(signature_json), 'utf-8'))
     signer = PKCS1_PSS.new(priv_key)
     signature = signer.sign(digest).hex()
-    print(digest)
     headers.update({'Signature': str(signature)})
-
-    # print(signature_json)
 
     resp = client.post(
         f'{route}/removeDevice',

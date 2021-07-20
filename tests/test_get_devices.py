@@ -70,10 +70,7 @@ def test_get_devices(client):
     digest = SHA.new(bytes(json.dumps(signature_json), 'utf-8'))
     signer = PKCS1_PSS.new(priv_key)
     signature = signer.sign(digest).hex()
-    print(digest)
     headers.update({'Signature': str(signature)})
-
-    # print(headers)
 
     resp = client.post(
         f'{route}/getDevices',

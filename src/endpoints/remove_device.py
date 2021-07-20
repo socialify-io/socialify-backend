@@ -34,9 +34,9 @@ async def remove_device():
     try:
         user_agent = request.headers['User-Agent']
         os = request.headers['OS']
-        timestamp = request.headers['Timestamp']
+        timestamp = int(request.headers['Timestamp'])
         app_version = request.headers['AppVersion']
-        auth_token = bytes(request.headers['AuthToken'], 'utf-8')
+        auth_token = request.headers['AuthToken']
         fingerprint = request.headers['Fingerprint']
         signature = request.headers['Signature']
 
@@ -58,14 +58,16 @@ async def remove_device():
         return jsonify(ErrorResponse(
             errors=[error]).__dict__)
 
-    # finally:
-    #     error = ApiError(
-    #         code=Error.InvalidHeaders,
-    #         reason='Everything works fine!'
-    #     ).__dict__
-    #
-    #     return jsonify(ErrorResponse(
-    #       errors=[error]).__dict__)
+    """
+    finally:
+        error = ApiError(
+            code=Error.InvalidHeaders,
+            reason='Everything works fine!'
+        ).__dict__
+    
+        return jsonify(ErrorResponse(
+          errors=[error]).__dict__)
+    """
 
     auth_token_check = bytes(
         f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
@@ -73,7 +75,7 @@ async def remove_device():
 
     body = request.get_json(force=True)
 
-    if bcrypt.checkpw(auth_token_check, auth_token):
+    if bcrypt.checkpw(auth_token_check, bytes(auth_token, 'utf-8')):
         try:
             userId = user_session.query(Device.userId).filter(Device.fingerprint == fingerprint).one()
             userId = int(userId[0])
@@ -95,7 +97,7 @@ async def remove_device():
             'headers': headers,
             'body': body,
             'timestamp': timestamp,
-            'authToken': auth_token.decode(),
+            'authToken': auth_token,
             'endpointUrl': f'{route}/removeDevice'
         }
 
@@ -105,17 +107,13 @@ async def remove_device():
         # todo
         if verify_sign(signature_json_check, signature, pub_key):
             try:
-                error = ApiError(
-                    code=Error.InvalidRequestPayload,
-                    reason='Works.'
-                ).__dict__
+                
 
-                return jsonify(ErrorResponse(
-                    errors=[error]).__dict__)
+                return jsonify(Response(data={}).__dict__)
             except:
                 error = ApiError(
                     code=Error.InvalidRequestPayload,
-                    reason='Still dont fcking work.'
+                    reason='Some params in payload is not valid.'
                 ).__dict__
 
                 return jsonify(ErrorResponse(
@@ -128,6 +126,7 @@ async def remove_device():
 
             return jsonify(ErrorResponse(
                 errors=[error]).__dict__)
+
         # if verify_sign(signature_json_check, signature, pub_key):
         #     try:
         #         #user_session.query(Device).filter(Device.fingerprint == fingerprint).delete()
