@@ -6,6 +6,7 @@ import hashlib
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import route, app
@@ -15,113 +16,119 @@ from Crypto.PublicKey import RSA
 
 import datetime
 
+
 @pytest.fixture
 def client():
-	client = app.test_client()
+    client = app.test_client()
 
-	yield client
+    yield client
+
 
 key = ""
 
+
 def test_login_getkey(client):
-	timestamp = int(datetime.datetime.now().timestamp())
+    timestamp = int(datetime.datetime.now().timestamp())
 
-	auth_token_begin_header = '$begin-getKey$'
-	auth_token_end_header = '$end-getKey$'
+    auth_token_begin_header = '$begin-getKey$'
+    auth_token_end_header = '$end-getKey$'
 
-	os = 'iOS_14.6'
-	app_version = '0.1'
-	user_agent = 'Socialify-iOS'
+    os = 'iOS_14.6'
+    app_version = '0.1'
+    user_agent = 'Socialify-iOS'
 
-	auth_token = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
+    auth_token = bytes(
+        f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
 
-	auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
+    auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
 
-	headers = {
-		'Content-Type': 'applictaion/json',
-		'User-Agent': user_agent,
-		'OS': os,
-		'Timestamp': timestamp,
-		'AppVersion': app_version,
-		'AuthToken': auth_token_hashed
-	}
+    headers = {
+        'Content-Type': 'applictaion/json',
+        'User-Agent': user_agent,
+        'OS': os,
+        'Timestamp': timestamp,
+        'AppVersion': app_version,
+        'AuthToken': auth_token_hashed
+    }
 
-	resp = client.post(
-		f'{route}/getKey',
-		headers=headers
-	)
+    resp = client.post(
+        f'{route}/getKey',
+        headers=headers
+    )
 
-	json_resp = json.loads(resp.data.decode('utf8'))
+    json_resp = json.loads(resp.data.decode('utf8'))
 
-	print(json_resp)
+    print(json_resp)
 
-	global key
+    global key
 
-	key = json_resp['data']['pubKey']
+    key = json_resp['data']['pubKey']
 
-	assert resp.status_code == 200
-	assert json_resp['success'] == True
+    assert resp.status_code == 200
+    assert json_resp['success'] == True
 
 
 def test_new_device(client):
-	password = 'test_pass123'
+    password = 'test_pass123'
 
-	pub_key = RSA.importKey(key)
-	enc_pass = encrypt_rsa(password, pub_key)
+    pub_key = RSA.importKey(key)
+    enc_pass = encrypt_rsa(password, pub_key)
 
-	timestamp = int(datetime.datetime.now().timestamp())
+    timestamp = int(datetime.datetime.now().timestamp())
 
-	auth_token_begin_header = '$begin-newDevice$'
-	auth_token_end_header = '$end-newDevice$'
+    auth_token_begin_header = '$begin-newDevice$'
+    auth_token_end_header = '$end-newDevice$'
 
-	os = 'iOS_14.6'
-	app_version = '0.1'
-	user_agent = 'Socialify-iOS'
+    os = 'iOS_14.6'
+    app_version = '0.1'
+    user_agent = 'Socialify-iOS'
 
-	auth_token = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
+    auth_token = bytes(
+        f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
 
-	auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
-	
-	headers = {
-		'Content-Type': 'applictaion/json',
-		'User-Agent': user_agent,
-		'OS': os,
-		'Timestamp': timestamp,
-		'AppVersion': app_version,
-		'AuthToken': auth_token_hashed
-	}
+    auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
 
-	keys = generate_keys()
-	priv_key = keys.exportKey().decode('utf-8')
-	pub_key = keys.publickey().exportKey().decode('utf-8')
+    headers = {
+        'Content-Type': 'applictaion/json',
+        'User-Agent': user_agent,
+        'OS': os,
+        'Timestamp': timestamp,
+        'AppVersion': app_version,
+        'AuthToken': auth_token_hashed
+    }
 
-	payload = {
-		'username': 'TestAccount123',
-		'password': enc_pass.decode('utf8'),
-		'pubKey': key,
-		'device': {
-			'deviceName': 'Unit test',
-			'timestamp': timestamp,
-			'appVersion': '0.1',
-			'os': 'iOS 14.6',
-			'signPubKey': pub_key,
-			'fingerprint': hashlib.sha1(bytes(priv_key, 'utf-8')).hexdigest()
-		}
-	}
+    keys = generate_keys()
+    priv_key = keys.exportKey().decode('utf-8')
+    pub_key = keys.publickey().exportKey().decode('utf-8')
 
-	resp = client.post(
-		f'{route}/newDevice',
-		headers=headers,
-		json=payload
-	)
+    payload = {
+        'username': 'TestAccount123',
+        'password': enc_pass.decode('utf8'),
+        'pubKey': key,
+        'device': {
+            'deviceName': 'Unit test',
+            'deviceIP': '127.0.0.1',
+            'timestamp': timestamp,
+            'appVersion': '0.1',
+            'os': 'iOS 14.6',
+            'signPubKey': pub_key,
+            'fingerprint': hashlib.sha1(bytes(priv_key, 'utf-8')).hexdigest()
+        }
+    }
 
-	json_resp = json.loads(resp.data.decode('utf8'))
+    resp = client.post(
+        f'{route}/newDevice',
+        headers=headers,
+        json=payload
+    )
 
-	print(json_resp)
+    json_resp = json.loads(resp.data.decode('utf8'))
 
-	f = open("tests/key.pem", "w")
-	f.write(str(priv_key))
-	f.close()
+    print(json_resp)
 
-	assert resp.status_code == 200
-	assert json_resp['success'] == True
+    f = open("tests/key.pem", "w")
+    f.write(str(priv_key))
+    f.close()
+
+    assert resp.status_code == 200
+    assert json_resp['success'] == True

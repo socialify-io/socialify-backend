@@ -40,4 +40,4 @@ jobs:
         pytest tests/test_account_register.py
         pytest tests/test_new_device.py
         pytest tests/test_get_devices.py
-        
+        pytest tests/test_remove_device.py

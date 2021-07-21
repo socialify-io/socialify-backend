@@ -65,6 +65,7 @@ def admin():
 
 from src.endpoints import get_key, register, get_devices
 from src.endpoints import new_device
+from src.endpoints import remove_device
 
 if __name__ == '__main__':
     app.run()

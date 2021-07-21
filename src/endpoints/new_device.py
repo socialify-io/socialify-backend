@@ -101,7 +101,9 @@ async def new_device():
                     pubKey=body['device']['signPubKey'],
                     fingerprint=body['device']['fingerprint'],
                     deviceName=body['device']['deviceName'],
-                    timestamp=date
+                    deviceIP=body['device']['deviceIP'],
+                    timestamp=date,
+                    last_active=date
                 )   
 
                 user_session.add(new_device)

@@ -86,14 +86,20 @@ async def get_devices():
         }
 
         if verify_sign(signature_json_check, signature, pub_key):
-            devices_db = user_session.query(Device.deviceName).filter(Device.userId == userId).all()
+            devices_db = user_session.query(Device).filter(Device.userId == userId).all()
             devices = []
 
             for device in devices_db:
-                devices.append(device[0])
+                device_json = {
+                    "deviceName": device.deviceName,
+                    "deviceIP": device.deviceIP,
+                    "os": device.os,
+                    "deviceCreationDate": device.timestamp,
+                    "deviceLastActive": device.last_active
+                }
+                devices.append(device_json)
 
             return jsonify(Response(data=devices).__dict__)
-
         else:
             error = ApiError(
                 code = Error().InvalidSignature,

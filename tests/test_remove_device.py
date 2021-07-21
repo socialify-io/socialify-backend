@@ -3,7 +3,6 @@ from flask import url_for
 import json
 import bcrypt
 import hashlib
-from Crypto.Signature import PKCS1_PSS
 
 import os
 import sys
@@ -14,7 +13,7 @@ from app import route, app
 
 from src.helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Signature import PKCS1_PSS
 from Crypto.Hash import SHA
 
 import datetime
@@ -26,8 +25,7 @@ def client():
 
     yield client
 
-
-def test_get_devices(client):
+def test_remove_device(client):
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
@@ -35,8 +33,8 @@ def test_get_devices(client):
 
     timestamp = int(datetime.datetime.now().timestamp())
 
-    auth_token_begin_header = '$begin-getDevices$'
-    auth_token_end_header = '$end-getDevices$'
+    auth_token_begin_header = '$begin-removeDevice$'
+    auth_token_end_header = '$end-removeDevice$'
 
     os = 'iOS_14.6'
     app_version = '0.1'
@@ -48,7 +46,7 @@ def test_get_devices(client):
     auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
 
     headers = {
-        'Content-Type': 'applictaion/json',
+        'Content-Type': 'application/json',
         'User-Agent': user_agent,
         'OS': os,
         'Timestamp': timestamp,
@@ -57,14 +55,19 @@ def test_get_devices(client):
         'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()
     }
 
-    payload = {}
+    payload = {
+        'device': {
+            'deviceName': 'Unit test',
+            'fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()
+        }
+    }
 
     signature_json = {
         'headers': headers,
         'body': payload,
         'timestamp': timestamp,
         'authToken': auth_token_hashed.decode(),
-        'endpointUrl': f'{route}/getDevices'
+        'endpointUrl': f'{route}/removeDevice'
     }
 
     digest = SHA.new(bytes(json.dumps(signature_json), 'utf-8'))
@@ -73,8 +76,9 @@ def test_get_devices(client):
     headers.update({'Signature': str(signature)})
 
     resp = client.post(
-        f'{route}/getDevices',
-        headers=headers
+        f'{route}/removeDevice',
+        headers=headers,
+        json=payload
     )
 
     json_resp = json.loads(resp.data.decode('utf8'))
