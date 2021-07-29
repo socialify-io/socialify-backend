@@ -4,19 +4,18 @@ class Error(object):
     InvalidRepeatPassword = 2
 
     # Login
-    InvalidUsername = 3
-    InvalidPassword = 4
+    InvalidPassword = 3
 
     # Crypto
-    InvalidPublicRSAKey = 5
-    InvalidPasswordEncryption = 6
+    InvalidPublicRSAKey = 4
+    InvalidPasswordEncryption = 5
 
     # Server
-    InternalServerError = 7
+    InternalServerError = 6
 
     # Request sign
-    InvalidAuthToken = 8
-    InvalidHeaders = 9
-    InvalidFingerprint = 10
-    InvalidSignature = 11
-    InvalidRequestPayload = 12
+    InvalidAuthToken = 7
+    InvalidHeaders = 8
+    InvalidFingerprint = 9
+    InvalidSignature = 10
+    InvalidRequestPayload = 11
