@@ -7,7 +7,7 @@ import hashlib
 import json
 
 def generate_keys():
-    modulus_length = 3072
+    modulus_length = 2048
     key = RSA.generate(modulus_length)
     return key
 
