@@ -1,22 +1,22 @@
 class Error(object):
     # Register
-    InvalidUsername = 0
-    InvalidRepeatPassword = 1
+    InvalidUsername = 1
+    InvalidRepeatPassword = 2
 
     # Login
-    InvalidUsername = 2
-    InvalidPassword = 3
+    InvalidUsername = 3
+    InvalidPassword = 4
 
     # Crypto
-    InvalidPublicRSAKey = 4
-    InvalidPasswordEncryption = 5
+    InvalidPublicRSAKey = 5
+    InvalidPasswordEncryption = 6
 
     # Server
-    InternalServerError = 6
+    InternalServerError = 7
 
     # Request sign
-    InvalidAuthToken = 7
-    InvalidHeaders = 8
-    InvalidFingerprint = 9
-    InvalidSignature = 10
-    InvalidRequestPayload = 11
+    InvalidAuthToken = 8
+    InvalidHeaders = 9
+    InvalidFingerprint = 10
+    InvalidSignature = 11
+    InvalidRequestPayload = 12
