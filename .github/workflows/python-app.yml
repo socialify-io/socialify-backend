@@ -35,6 +35,7 @@ jobs:
       run: |
         python db/create_keys_db.py
         python db/create_users_db.py
+        python db/create_error_reports_db.py
     - name: Test with pytest
       run: |
         pytest tests/test_account_register.py
