@@ -15,11 +15,12 @@ class ErrorReport(ErrorBase):
     __tablename__ = 'error_reports'
 
     id = Column(INTEGER, primary_key=True)
-    message = Column(VARCHAR(150), nullable=False)
-    userId = Column(INTEGER, nullable=False)
+    errorType = Column(TEXT, nullable=False)
+    errorContext = Column(TEXT, nullable=False)
+    message = Column(TEXT, nullable=True)
+    userId = Column(INTEGER, nullable=True)
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
-    deviceName = Column(TEXT, nullable=False)
     deviceIP = Column(VARCHAR(15), nullable=False)
     timestamp = Column(TIMESTAMP, nullable=False)
 
