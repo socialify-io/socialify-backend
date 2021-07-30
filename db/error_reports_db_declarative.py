@@ -8,13 +8,14 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.sql.sqltypes import TEXT, VARCHAR, TIMESTAMP, INTEGER
 
-UserBase = declarative_base()
+ErrorBase = declarative_base()
 
 
-class Device(UserBase):
+class ErrorReport(ErrorBase):
     __tablename__ = 'error_reports'
 
     id = Column(INTEGER, primary_key=True)
+    message = Column(VARCHAR(150), nullable=False)
     userId = Column(INTEGER, nullable=False)
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
@@ -25,4 +26,4 @@ class Device(UserBase):
 
 engine = create_engine('sqlite:///db/error_reports.db')
 
-UserBase.metadata.create_all(engine)
+ErrorBase.metadata.create_all(engine)
