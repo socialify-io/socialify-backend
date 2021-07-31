@@ -17,6 +17,7 @@ class ErrorReport(ErrorBase):
     id = Column(INTEGER, primary_key=True)
     errorType = Column(TEXT, nullable=False)
     errorContext = Column(TEXT, nullable=False)
+    messageTitle = Column(TEXT, nullable=True)
     message = Column(TEXT, nullable=True)
     userId = Column(INTEGER, nullable=True)
     appVersion = Column(TEXT, nullable=False)
