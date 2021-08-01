@@ -1,7 +1,7 @@
 from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import Flask, render_template, request, jsonify
-from db.keys_db_declarative import KeyBase, Key
-from db.users_db_declarative import UserBase, User
+from db.keys_db_declarative import Key
+from db.users_db_declarative import User
 
 #models
 from models.errors._api_error import ApiError
@@ -11,10 +11,9 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 # crypto
-from ..helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
+from ..helpers.RSA_helper import decrypt_rsa
 
 from Crypto.PublicKey import RSA
-from base64 import b64decode, b64encode
 import bcrypt
 
 auth_token_begin_header = '$begin-register$'

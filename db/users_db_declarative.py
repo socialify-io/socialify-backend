@@ -1,10 +1,5 @@
-import os
-import sys
-from typing import Text
-
 from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.sql.sqltypes import TEXT, VARCHAR, TIMESTAMP, INTEGER
 

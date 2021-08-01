@@ -1,10 +1,7 @@
-from datetime import time
-from app import app, HTTP_METHODS, route, user_session, error_reports_session
-from flask import Flask, render_template, request, jsonify
-from db.users_db_declarative import UserBase, User, Device
+from app import app, HTTP_METHODS, route, error_reports_session
+from flask import render_template, request, jsonify
 from db.error_reports_db_declarative import ErrorReport
 
-from base64 import b64decode, b64encode
 import bcrypt
 from datetime import datetime
 import pytz
@@ -31,15 +28,6 @@ async def report_error():
         timestamp = int(request.headers['Timestamp'])
         app_version = request.headers['AppVersion']
         auth_token = request.headers['AuthToken']
-
-        headers = {
-            'Content-Type': request.headers['Content-Type'],
-            'User-Agent': request.headers['User-Agent'],
-            'OS': request.headers['OS'],
-            'Timestamp': int(request.headers['Timestamp']),
-            'AppVersion': request.headers['AppVersion'],
-            'AuthToken': request.headers['AuthToken'],
-        }
 
     except:
         error = ApiError(

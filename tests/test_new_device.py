@@ -1,5 +1,4 @@
 import pytest
-from flask import url_for
 import json
 import bcrypt
 import hashlib
@@ -11,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import route, app
 
-from src.helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
+from src.helpers.RSA_helper import encrypt_rsa, generate_keys
 from Crypto.PublicKey import RSA
 
 import datetime

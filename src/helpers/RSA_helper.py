@@ -3,7 +3,6 @@ from Crypto.Cipher import PKCS1_OAEP
 import base64
 from Crypto.Hash import SHA
 from Crypto.Signature import PKCS1_PSS
-import hashlib
 import json
 
 def generate_keys():

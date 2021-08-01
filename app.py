@@ -1,15 +1,10 @@
-from sqlite3.dbapi2 import DatabaseError
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, jsonify
 
 # Models
 from models.errors._api_error import ApiError
 
 from models.responses._error_response import ErrorResponse
-from models.responses._response import Response
 from models.errors.codes._error_codes import Error
-
-import time
-import threading
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
@@ -22,9 +17,9 @@ route = f"/api/v{VERSION}"
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
  
-from db.keys_db_declarative import KeyBase, Key
-from db.users_db_declarative import UserBase, User
-from db.error_reports_db_declarative import ErrorReportsBase, ErrorReport
+from db.keys_db_declarative import KeyBase
+from db.users_db_declarative import UserBase
+from db.error_reports_db_declarative import ErrorReportsBase
 
 key_engine = create_engine('sqlite:///db/keys.db', connect_args={'check_same_thread': False})
 KeyBase.metadata.bind = key_engine
@@ -63,12 +58,6 @@ def internal_server_error(e):
 def add_header(response):
     response.headers['Server'] = 'Socialify/0.1'
     return response
-
-"""
-@app.route('/admin', methods=HTTP_METHODS)
-def admin():
-    return render_template('admin.html')
-"""
 
 # Endpoints
 from src.endpoints import get_key, register, get_devices

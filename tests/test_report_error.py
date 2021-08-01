@@ -1,7 +1,5 @@
 import pytest
-from flask import url_for
 import json
-import hashlib
 import datetime
 import bcrypt
 
