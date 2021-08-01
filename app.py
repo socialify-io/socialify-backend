@@ -34,6 +34,7 @@ UserBase.metadata.bind = user_engine
 user_DBSession = sessionmaker(bind=user_engine)
 user_session = user_DBSession()
 
+
 error_reports_engine = create_engine('sqlite:///db/error_reports.db', connect_args={'check_same_thread': False})
 ErrorReportsBase.metadata.bind = error_reports_engine
  
