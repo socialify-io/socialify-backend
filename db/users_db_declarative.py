@@ -19,7 +19,7 @@ class Device(UserBase):
     __tablename__ = 'devices'
 
     id = Column(INTEGER, primary_key=True)
-    userId = Column(INTEGER, ForeignKey(User.id), primary_key=True, nullable=False)
+    userId = Column(INTEGER, ForeignKey(User.id), primary_key=True)
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
     pubKey = Column(TEXT, nullable=False)
