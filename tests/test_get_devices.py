@@ -1,8 +1,8 @@
 import pytest
 import json
-import bcrypt
-import hashlib
+from get_headers import get_headers
 from Crypto.Signature import PKCS1_PSS
+import hashlib
 
 import os
 import sys
@@ -13,9 +13,6 @@ from app import route, app
 
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA
-
-import datetime
-
 
 @pytest.fixture
 def client():
@@ -30,37 +27,18 @@ def test_get_devices(client):
 
     priv_key = RSA.importKey(priv_key_string)
 
-    timestamp = int(datetime.datetime.now().timestamp())
+    headers = get_headers("getDevices")
 
-    auth_token_begin_header = '$begin-getDevices$'
-    auth_token_end_header = '$end-getDevices$'
-
-    os = 'iOS_14.6'
-    app_version = '0.1'
-    user_agent = 'Socialify-iOS'
-
-    auth_token = bytes(
-        f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
-
-    auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
-
-    headers = {
-        'Content-Type': 'applictaion/json',
-        'User-Agent': user_agent,
-        'OS': os,
-        'Timestamp': timestamp,
-        'AppVersion': app_version,
-        'AuthToken': auth_token_hashed.decode(),
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()
-    }
+    headers.update({
+        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()})
 
     payload = {}
 
     signature_json = {
         'headers': headers,
         'body': payload,
-        'timestamp': timestamp,
-        'authToken': auth_token_hashed.decode(),
+        'timestamp': headers['Timestamp'],
+        'authToken': headers['AuthToken'],
         'endpointUrl': f'{route}/getDevices'
     }
 

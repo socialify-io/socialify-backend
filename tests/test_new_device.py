@@ -1,6 +1,6 @@
+from get_headers import get_headers
 import pytest
 import json
-import bcrypt
 import hashlib
 
 import os
@@ -13,9 +13,6 @@ from app import route, app
 from src.helpers.RSA_helper import encrypt_rsa, generate_keys
 from Crypto.PublicKey import RSA
 
-import datetime
-
-
 @pytest.fixture
 def client():
     client = app.test_client()
@@ -27,28 +24,7 @@ key = ""
 
 
 def test_login_getkey(client):
-    timestamp = int(datetime.datetime.now().timestamp())
-
-    auth_token_begin_header = '$begin-getKey$'
-    auth_token_end_header = '$end-getKey$'
-
-    os = 'iOS_14.6'
-    app_version = '0.1'
-    user_agent = 'Socialify-iOS'
-
-    auth_token = bytes(
-        f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
-
-    auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
-
-    headers = {
-        'Content-Type': 'applictaion/json',
-        'User-Agent': user_agent,
-        'OS': os,
-        'Timestamp': timestamp,
-        'AppVersion': app_version,
-        'AuthToken': auth_token_hashed
-    }
+    headers = get_headers("getKey")
 
     resp = client.post(
         f'{route}/getKey',
@@ -73,28 +49,7 @@ def test_new_device(client):
     pub_key = RSA.importKey(key)
     enc_pass = encrypt_rsa(password, pub_key)
 
-    timestamp = int(datetime.datetime.now().timestamp())
-
-    auth_token_begin_header = '$begin-newDevice$'
-    auth_token_end_header = '$end-newDevice$'
-
-    os = 'iOS_14.6'
-    app_version = '0.1'
-    user_agent = 'Socialify-iOS'
-
-    auth_token = bytes(
-        f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
-
-    auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
-
-    headers = {
-        'Content-Type': 'applictaion/json',
-        'User-Agent': user_agent,
-        'OS': os,
-        'Timestamp': timestamp,
-        'AppVersion': app_version,
-        'AuthToken': auth_token_hashed
-    }
+    headers = get_headers("newDevice")
 
     keys = generate_keys()
     priv_key = keys.exportKey().decode('utf-8')
@@ -107,7 +62,7 @@ def test_new_device(client):
         'device': {
             'deviceName': 'Unit test',
             'deviceIP': '127.0.0.1',
-            'timestamp': timestamp,
+            'timestamp': headers['Timestamp'],
             'appVersion': '0.1',
             'os': 'iOS 14.6',
             'signPubKey': pub_key,
