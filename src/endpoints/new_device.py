@@ -1,12 +1,24 @@
 from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import render_template, request, jsonify
+
+# Database
 from db.keys_db_declarative import Key
 from db.users_db_declarative import User, Device
 
+# Helpers
+from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ..helpers.verify_authtoken import verify_authtoken
+
+# Crypto
+from ..helpers.RSA_helper import decrypt_rsa
+from Crypto.PublicKey import RSA
+import bcrypt
+
+# Datatime
 from datetime import datetime
 import pytz
 
-# models
+# Models
 from models.errors._api_error import ApiError
 
 from models.responses._error_response import ErrorResponse
@@ -14,14 +26,6 @@ from models.responses._response import Response
 
 from models.errors.codes._error_codes import Error
 
-# crypto
-from ..helpers.RSA_helper import decrypt_rsa
-
-from Crypto.PublicKey import RSA
-import bcrypt
-
-auth_token_begin_header = '$begin-newDevice$'
-auth_token_end_header = '$end-newDevice$'
 
 @app.route(f'{route}/newDevice', methods=HTTP_METHODS)
 async def new_device():
@@ -29,11 +33,7 @@ async def new_device():
         return render_template('what_are_you_looking_for.html')
 
     try:
-        user_agent = request.headers['User-Agent']
-        os = request.headers['OS']
-        timestamp = request.headers['Timestamp']
-        app_version = request.headers['AppVersion']
-        auth_token = bytes(request.headers['AuthToken'], 'utf-8')
+        headers = get_headers(request, without_fingerprint)
 
     except:
         error = ApiError(
@@ -44,9 +44,7 @@ async def new_device():
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
 
-    auth_token_check = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
-
-    if bcrypt.checkpw(auth_token_check, auth_token):
+    if verify_authtoken(headers, "newDevice"):
         body = request.get_json(force=True)
 
         pub_key_string = body['pubKey']

@@ -1,12 +1,18 @@
 from app import app, HTTP_METHODS, route, user_session
 from flask import render_template, request, jsonify
+
+# Database
 from db.users_db_declarative import Device
+
+# Helpers
+from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ..helpers.verify_authtoken import verify_authtoken
 from ..helpers.RSA_helper import verify_sign
 
+# Crypto
 from Crypto.PublicKey import RSA
-import bcrypt
 
-# models
+# Models
 from models.errors._api_error import ApiError
 
 from models.responses._error_response import ErrorResponse
@@ -14,8 +20,6 @@ from models.responses._response import Response
 
 from models.errors.codes._error_codes import Error
 
-auth_token_begin_header = '$begin-getDevices$'
-auth_token_end_header = '$end-getDevices$'
 
 @app.route(f'{route}/getDevices', methods=HTTP_METHODS)
 async def get_devices():
@@ -23,23 +27,8 @@ async def get_devices():
         return render_template('what_are_you_looking_for.html')
 
     try:
-        user_agent = request.headers['User-Agent']
-        os = request.headers['OS']
-        timestamp = int(request.headers['Timestamp'])
-        app_version = request.headers['AppVersion']
-        auth_token = request.headers['AuthToken']
         signature = request.headers['Signature']
-        fingerprint = request.headers['Fingerprint']
-
-        headers = {
-            'Content-Type': request.headers['Content-Type'],
-            'User-Agent': request.headers['User-Agent'],
-            'OS': request.headers['OS'],
-            'Timestamp': int(request.headers['Timestamp']),
-            'AppVersion': request.headers['AppVersion'],
-            'AuthToken': request.headers['AuthToken'],
-            'Fingerprint': request.headers['Fingerprint']
-        }
+        headers = get_headers(request, with_fingerprint)
 
     except:
         error = ApiError(
@@ -50,11 +39,9 @@ async def get_devices():
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
 
-    auth_token_check = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
-
-    if bcrypt.checkpw(auth_token_check, bytes(auth_token, 'utf-8')):
+    if verify_authtoken(headers, "getDevices"):
         try:
-            userId = user_session.query(Device.userId).filter(Device.fingerprint == fingerprint).one()
+            userId = user_session.query(Device.userId).filter(Device.fingerprint == headers["Fingerprint"]).one()
             userId = int(userId[0])
 
         except:
@@ -66,7 +53,7 @@ async def get_devices():
             return jsonify(ErrorResponse(
                         errors = [error]).__dict__)
 
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == fingerprint).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == headers["Fingerprint"]).one()
         pub_key = pub_key[0]
         pub_key = RSA.importKey(pub_key)
         
@@ -77,8 +64,8 @@ async def get_devices():
         signature_json_check = {
             'headers': headers,
             'body': body,
-            'timestamp': timestamp,
-            'authToken': auth_token,
+            'timestamp': headers["Timestamp"],
+            'authToken': headers["AuthToken"],
             'endpointUrl': f'{route}/getDevices'
         }
 
