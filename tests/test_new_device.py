@@ -1,4 +1,5 @@
 from get_headers import get_headers
+from get_key import get_key
 import pytest
 import json
 import hashlib
@@ -19,31 +20,8 @@ def client():
 
     yield client
 
-
-key = ""
-
-
-def test_login_getkey(client):
-    headers = get_headers("getKey")
-
-    resp = client.post(
-        f'{route}/getKey',
-        headers=headers
-    )
-
-    json_resp = json.loads(resp.data.decode('utf8'))
-
-    print(json_resp)
-
-    global key
-
-    key = json_resp['data']['pubKey']
-
-    assert resp.status_code == 200
-    assert json_resp['success'] == True
-
-
 def test_new_device(client):
+    key = get_key(client)
     password = 'test_pass123'
 
     pub_key = RSA.importKey(key)

@@ -27,7 +27,6 @@ def test_remove_device(client):
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers("removeDevice")
-
     headers.update({
         'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()})
 

@@ -28,15 +28,12 @@ def test_get_devices(client):
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers("getDevices")
-
     headers.update({
         'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()})
 
-    payload = {}
-
     signature_json = {
         'headers': headers,
-        'body': payload,
+        'body': {},
         'timestamp': headers['Timestamp'],
         'authToken': headers['AuthToken'],
         'endpointUrl': f'{route}/getDevices'
