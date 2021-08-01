@@ -12,10 +12,11 @@ class Error(object):
 
     # Server
     InternalServerError = 6
+    BadRequest = 7
 
     # Request sign
-    InvalidAuthToken = 7
-    InvalidHeaders = 8
-    InvalidFingerprint = 9
-    InvalidSignature = 10
-    InvalidRequestPayload = 11
+    InvalidAuthToken = 8
+    InvalidHeaders = 9
+    InvalidFingerprint = 10
+    InvalidSignature = 11
+    InvalidRequestPayload = 12

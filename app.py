@@ -40,6 +40,16 @@ ErrorReportsBase.metadata.bind = error_reports_engine
 error_reports_DBSession = sessionmaker(bind=error_reports_engine)
 error_reports_session = error_reports_DBSession()
 
+@app.errorhandler(400)
+def bad_request(e):
+    error = ApiError(
+        code=Error().BadRequest,
+        reason=f'{str(e)}'
+    ).__dict__
+
+    return jsonify(ErrorResponse(
+        errors=[error]).__dict__)
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('what_are_you_looking_for.html')
