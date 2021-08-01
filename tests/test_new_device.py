@@ -61,7 +61,6 @@ def test_new_device(client):
         'pubKey': key,
         'device': {
             'deviceName': 'Unit test',
-            'deviceIP': '127.0.0.1',
             'timestamp': headers['Timestamp'],
             'appVersion': '0.1',
             'os': 'iOS 14.6',
