@@ -6,7 +6,7 @@ def get_headers(request, with_fingerprint):
         'Content-Type': request.headers['Content-Type'],
         'User-Agent': request.headers['User-Agent'],
         'OS': request.headers['OS'],
-        'Timestamp': request.headers['Timestamp'],
+        'Timestamp': int(request.headers['Timestamp']),
         'AppVersion': request.headers['AppVersion'],
         'AuthToken': request.headers['AuthToken'],
     }
