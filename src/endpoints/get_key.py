@@ -1,11 +1,15 @@
-from app import app, HTTP_METHODS, route, key_session, user_session
-from flask import Flask, render_template, request, jsonify
-from db.keys_db_declarative import KeyBase, Key
-from ..helpers.RSA_helper import encrypt_rsa, generate_keys, decrypt_rsa
+from app import app, HTTP_METHODS, route, key_session
+from flask import render_template, request, jsonify
 
-import bcrypt
+# Database
+from db.keys_db_declarative import Key
 
-# models
+# Helpers
+from ..helpers.RSA_helper import generate_keys
+from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ..helpers.verify_authtoken import verify_authtoken
+
+# Models
 from models.errors._api_error import ApiError
 
 from models.responses._error_response import ErrorResponse
@@ -13,8 +17,6 @@ from models.responses._response import Response
 
 from models.errors.codes._error_codes import Error
 
-auth_token_begin_header = '$begin-getKey$'
-auth_token_end_header = '$end-getKey$'
 
 @app.route(f'{route}/getKey', methods=HTTP_METHODS)
 async def get_key():
@@ -22,11 +24,7 @@ async def get_key():
         return render_template('what_are_you_looking_for.html')
 
     try:
-        user_agent = request.headers['User-Agent']
-        os = request.headers['OS']
-        timestamp = request.headers['Timestamp']
-        app_version = request.headers['AppVersion']
-        auth_token = bytes(request.headers['AuthToken'], 'utf-8')
+        headers = get_headers(request, without_fingerprint)
 
     except:
         error = ApiError(
@@ -37,9 +35,7 @@ async def get_key():
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
 
-    auth_token_check = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
-
-    if bcrypt.checkpw(auth_token_check, auth_token):
+    if verify_authtoken(headers, "getKey"):
         key = generate_keys()
 
         pub_key = key.publickey().exportKey().decode('utf-8')

@@ -1,15 +1,18 @@
-from datetime import time
-from app import app, HTTP_METHODS, route, user_session, error_reports_session
-from flask import Flask, render_template, request, jsonify
-from db.users_db_declarative import UserBase, User, Device
+from app import app, HTTP_METHODS, route, error_reports_session
+from flask import render_template, request, jsonify
+
+# Database
 from db.error_reports_db_declarative import ErrorReport
 
-from base64 import b64decode, b64encode
-import bcrypt
+# Helpers
+from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ..helpers.verify_authtoken import verify_authtoken
+
+# Datatime
 from datetime import datetime
 import pytz
 
-# models
+# Models
 from models.errors._api_error import ApiError
 
 from models.responses._error_response import ErrorResponse
@@ -17,8 +20,6 @@ from models.responses._response import Response
 
 from models.errors.codes._error_codes import Error
 
-auth_token_begin_header = '$begin-reportError$'
-auth_token_end_header = '$end-reportError$'
 
 @app.route(f'{route}/reportError', methods=HTTP_METHODS)
 async def report_error():
@@ -26,20 +27,7 @@ async def report_error():
         return render_template('what_are_you_looking_for.html')
 
     try:
-        user_agent = request.headers['User-Agent']
-        os = request.headers['OS']
-        timestamp = int(request.headers['Timestamp'])
-        app_version = request.headers['AppVersion']
-        auth_token = request.headers['AuthToken']
-
-        headers = {
-            'Content-Type': request.headers['Content-Type'],
-            'User-Agent': request.headers['User-Agent'],
-            'OS': request.headers['OS'],
-            'Timestamp': int(request.headers['Timestamp']),
-            'AppVersion': request.headers['AppVersion'],
-            'AuthToken': request.headers['AuthToken'],
-        }
+        headers = get_headers(request, without_fingerprint)
 
     except:
         error = ApiError(
@@ -50,9 +38,7 @@ async def report_error():
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
 
-    auth_token_check = bytes(f'{auth_token_begin_header}.{app_version}+{os}+{user_agent}#{timestamp}#.{auth_token_end_header}', 'utf-8')
-
-    if bcrypt.checkpw(auth_token_check, bytes(auth_token, 'utf-8')):
+    if verify_authtoken(headers, "reportError"):
         body = request.get_json(force=True)
 
         if 'errorType' in body:
@@ -75,15 +61,15 @@ async def report_error():
         else:
             message = None
 
-        date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=pytz.utc)
+        date = datetime.utcfromtimestamp(headers["Timestamp"]).replace(tzinfo=pytz.utc)
 
         report = ErrorReport(
                 errorType = errorType,
                 errorContext = errorContext,
                 messageTitle = messageTitle,
                 message = message,
-                appVersion = app_version,
-                os = os,
+                appVersion = headers["AppVersion"],
+                os = headers["OS"],
                 deviceIP = request.remote_addr,
                 timestamp = date
             )
@@ -101,3 +87,4 @@ async def report_error():
 
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
+                    

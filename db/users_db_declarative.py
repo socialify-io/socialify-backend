@@ -1,11 +1,8 @@
-import os
-import sys
-from typing import Text
-
 from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import TEXT, VARCHAR, TIMESTAMP, INTEGER
 
 UserBase = declarative_base()
@@ -18,12 +15,15 @@ class User(UserBase):
     username = Column(TEXT, nullable=False)
     password = Column(TEXT, nullable=False)
 
+    # relationships
+    devices = relationship('Device', backref='Device.userId', primaryjoin='User.id==Device.userId', lazy='dynamic')
+
 
 class Device(UserBase):
     __tablename__ = 'devices'
 
     id = Column(INTEGER, primary_key=True)
-    userId = Column(INTEGER, nullable=False)
+    userId = Column(INTEGER, ForeignKey(User.id), primary_key=True)
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
     pubKey = Column(TEXT, nullable=False)

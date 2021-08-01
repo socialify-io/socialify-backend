@@ -20,7 +20,8 @@ conn.execute('''CREATE TABLE devices
         deviceName TEXT NOT NULL,
         deviceIP VARCHAR(15) NOT NULL,
         timestamp TIMESTAMP NOT NULL,
-        last_active TIMESTAMP NOT NULL
+        last_active TIMESTAMP NOT NULL,
+        FOREIGN KEY (userId) REFERENCES users (id)
      )''')
 
 conn.close()

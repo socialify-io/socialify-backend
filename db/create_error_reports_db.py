@@ -9,7 +9,6 @@ conn.execute('''CREATE TABLE error_reports
         errorContext TEXT NULL,
         messageTitle TEXT NULL,
         message TEXT NULL,
-        userId INTEGER NULL,
         appVersion TEXT NOT NULL,
         os TEXT NOT NULL,
         deviceIP VARCHAR(15) NOT NULL,
