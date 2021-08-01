@@ -19,7 +19,7 @@ def client():
     yield client
 
 def test_report_error(client):
-    timestamp = int(datetime.datetime.now().timestamp)
+    timestamp = int(datetime.datetime.now().timestamp())
 
     auth_token_begin_header = '$begin-reportError$'
     auth_token_end_header = '$end-reportError$'

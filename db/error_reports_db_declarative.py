@@ -8,15 +8,14 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.sql.sqltypes import TEXT, VARCHAR, TIMESTAMP, INTEGER
 
-ErrorBase = declarative_base()
+ErrorReportsBase = declarative_base()
 
-
-class ErrorReport(ErrorBase):
+class ErrorReport(ErrorReportsBase):
     __tablename__ = 'error_reports'
 
     id = Column(INTEGER, primary_key=True)
-    errorType = Column(TEXT, nullable=False)
-    errorContext = Column(TEXT, nullable=False)
+    errorType = Column(TEXT, nullable=True)
+    errorContext = Column(TEXT, nullable=True)
     messageTitle = Column(TEXT, nullable=True)
     message = Column(TEXT, nullable=True)
     userId = Column(INTEGER, nullable=True)
@@ -26,6 +25,6 @@ class ErrorReport(ErrorBase):
     timestamp = Column(TIMESTAMP, nullable=False)
 
 
-engine = create_engine('sqlite:///db/error_reports.db')
+error_reports_engine = create_engine('sqlite:///db/error_reports.db')
 
-ErrorBase.metadata.create_all(engine)
+ErrorReportsBase.metadata.create_all(error_reports_engine)
