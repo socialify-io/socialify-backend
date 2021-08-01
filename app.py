@@ -24,6 +24,7 @@ from sqlalchemy.orm import sessionmaker
  
 from db.keys_db_declarative import KeyBase, Key
 from db.users_db_declarative import UserBase, User
+from db.error_reports_db_declarative import ErrorReportsBase, ErrorReport
 
 key_engine = create_engine('sqlite:///db/keys.db', connect_args={'check_same_thread': False})
 KeyBase.metadata.bind = key_engine
@@ -37,6 +38,12 @@ UserBase.metadata.bind = user_engine
  
 user_DBSession = sessionmaker(bind=user_engine)
 user_session = user_DBSession()
+
+error_reports_engine = create_engine('sqlite:///db/error_reports.db', connect_args={'check_same_thread': False})
+ErrorReportsBase.metadata.bind = error_reports_engine
+ 
+error_reports_DBSession = sessionmaker(bind=error_reports_engine)
+error_reports_session = error_reports_DBSession()
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -63,9 +70,11 @@ def admin():
     return render_template('admin.html')
 """
 
+# Endpoints
 from src.endpoints import get_key, register, get_devices
 from src.endpoints import new_device
 from src.endpoints import remove_device
+from src.endpoints import report_error
 
 if __name__ == '__main__':
     app.run()

@@ -35,9 +35,11 @@ jobs:
       run: |
         python db/create_keys_db.py
         python db/create_users_db.py
+        python db/create_error_reports_db.py
     - name: Test with pytest
       run: |
         pytest tests/test_account_register.py
         pytest tests/test_new_device.py
         pytest tests/test_get_devices.py
         pytest tests/test_remove_device.py
+        pytest tests/test_report_error.py
