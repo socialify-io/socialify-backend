@@ -13,7 +13,6 @@ class ErrorReport(ErrorReportsBase):
     errorContext = Column(TEXT, nullable=True)
     messageTitle = Column(TEXT, nullable=True)
     message = Column(TEXT, nullable=True)
-    userId = Column(INTEGER, nullable=True)
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
     deviceIP = Column(VARCHAR(15), nullable=False)
