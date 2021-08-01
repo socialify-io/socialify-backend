@@ -17,7 +17,7 @@ def get_headers(endpoint):
     auth_token_hashed = bcrypt.hashpw(auth_token, bcrypt.gensalt())
 
     headers = {
-        'Content-Type': 'applictaion/json',
+        'Content-Type': 'application/json',
         'User-Agent': user_agent,
         'OS': os,
         'Timestamp': timestamp,
