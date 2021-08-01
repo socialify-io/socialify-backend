@@ -12,8 +12,7 @@ conn.execute('''CREATE TABLE users
 conn.execute('''CREATE TABLE devices 
     (
         id INTEGER PRIMARY KEY ASC, 
-        userId INTEGER NOT NULL
-        FOREIGN KEY(userId) REFERENCES users(id),
+        userId INTEGER NOT NULL,
         appVersion TEXT NOT NULL,
         os TEXT NOT NULL,
         pubKey TEXT NOT NULL,
@@ -21,7 +20,8 @@ conn.execute('''CREATE TABLE devices
         deviceName TEXT NOT NULL,
         deviceIP VARCHAR(15) NOT NULL,
         timestamp TIMESTAMP NOT NULL,
-        last_active TIMESTAMP NOT NULL
+        last_active TIMESTAMP NOT NULL,
+        FOREIGN KEY (userId) REFERENCES users (id)
      )''')
 
 conn.close()
