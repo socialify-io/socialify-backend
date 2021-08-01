@@ -1,5 +1,5 @@
 from sqlalchemy import Column
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, relationship
 from sqlalchemy import create_engine
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import TEXT, VARCHAR, TIMESTAMP, INTEGER
@@ -13,6 +13,9 @@ class User(UserBase):
     id = Column(INTEGER, primary_key=True)
     username = Column(TEXT, nullable=False)
     password = Column(TEXT, nullable=False)
+
+    # relationships
+    devices = relationship('Device', backref='Device.userId', primaryjoin='User.id==Device.userId', lazy='dynamic')
 
 
 class Device(UserBase):
