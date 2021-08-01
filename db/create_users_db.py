@@ -12,7 +12,7 @@ conn.execute('''CREATE TABLE users
 conn.execute('''CREATE TABLE devices 
     (
         id INTEGER PRIMARY KEY ASC, 
-        userId INTEGER NOT NULL,
+        FOREIGN KEY(userId) REFERENCES users(id) NOT NULL,
         appVersion TEXT NOT NULL,
         os TEXT NOT NULL,
         pubKey TEXT NOT NULL,

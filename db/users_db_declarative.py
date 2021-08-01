@@ -1,6 +1,7 @@
 from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import TEXT, VARCHAR, TIMESTAMP, INTEGER
 
 UserBase = declarative_base()
@@ -18,7 +19,7 @@ class Device(UserBase):
     __tablename__ = 'devices'
 
     id = Column(INTEGER, primary_key=True)
-    userId = Column(INTEGER, nullable=False)
+    userId = Column(INTEGER, ForeignKey(User.id), primary_key=True, nullable=False)
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
     pubKey = Column(TEXT, nullable=False)
