@@ -46,7 +46,8 @@ def test_get_devices(client):
 
     resp = client.post(
         f'{route}/getDevices',
-        headers=headers
+        headers=headers,
+        json={}
     )
 
     json_resp = json.loads(resp.data.decode('utf8'))
