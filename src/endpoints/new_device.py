@@ -87,12 +87,12 @@ async def new_device():
 
                 userId = user_session.query(User.id).filter(User.username == body['username']).one()
 
-                date = datetime.utcfromtimestamp(body['device']['timestamp']).replace(tzinfo=pytz.utc)
+                date = datetime.utcfromtimestamp(headers['timestamp']).replace(tzinfo=pytz.utc)
 
                 new_device = Device(
                     userId=userId[0],
-                    appVersion=body['device']['appVersion'],
-                    os=body['device']['os'],
+                    appVersion=headers['appVersion'],
+                    os=headers['os'],
                     pubKey=body['device']['signPubKey'],
                     fingerprint=body['device']['fingerprint'],
                     deviceName=body['device']['deviceName'],
