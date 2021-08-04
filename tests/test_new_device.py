@@ -39,9 +39,6 @@ def test_new_device(client):
         'pubKey': key,
         'device': {
             'deviceName': 'Unit test',
-            'timestamp': headers['Timestamp'],
-            'appVersion': '0.1',
-            'os': 'iOS 14.6',
             'signPubKey': pub_key,
             'fingerprint': hashlib.sha1(bytes(priv_key, 'utf-8')).hexdigest()
         }
