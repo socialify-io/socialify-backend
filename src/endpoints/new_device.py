@@ -91,8 +91,8 @@ async def new_device():
 
                 new_device = Device(
                     userId=userId[0],
-                    appVersion=headers['appVersion'],
-                    os=headers['os'],
+                    appVersion=headers['AppVersion'],
+                    os=headers['OS'],
                     pubKey=body['device']['signPubKey'],
                     fingerprint=body['device']['fingerprint'],
                     deviceName=body['device']['deviceName'],
