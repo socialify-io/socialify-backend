@@ -23,7 +23,7 @@ class Device(UserBase):
     __tablename__ = 'devices'
 
     id = Column(INTEGER, primary_key=True)
-    userId = Column(INTEGER, ForeignKey(User.id), primary_key=True)
+    userId = Column(INTEGER, ForeignKey(User.id), autoincrement=True)
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
     pubKey = Column(TEXT, nullable=False)
@@ -32,6 +32,7 @@ class Device(UserBase):
     deviceIP = Column(VARCHAR(15), nullable=False)
     timestamp = Column(TIMESTAMP, nullable=False)
     last_active = Column(TIMESTAMP, nullable=False)
+    messageToken = Column(VARCHAR(46), nullable=True)
 
 
 engine = create_engine('sqlite:///db/users.db')

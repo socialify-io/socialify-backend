@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify
+from flask_socketio import SocketIO
 
 # Models
 from models.errors._api_error import ApiError
@@ -7,6 +8,7 @@ from models.responses._error_response import ErrorResponse
 from models.errors.codes._error_codes import Error
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
+socketio = SocketIO(app)
 
 HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']
 
@@ -76,5 +78,8 @@ from src.endpoints import new_device
 from src.endpoints import remove_device
 from src.endpoints import report_error
 
+from src.endpoints.messages import send_message
+
 if __name__ == '__main__':
     app.run()
+    socketio.run(app)

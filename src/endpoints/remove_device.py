@@ -53,22 +53,10 @@ async def remove_device():
                 errors=[error]).__dict__)
 
         pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == headers["Fingerprint"]).one()
-        pub_key = pub_key[0]
-        pub_key = RSA.importKey(pub_key)
 
-        body = request.get_json(force=True)
-
-        signature_json_check = {
-            'headers': headers,
-            'body': body,
-            'timestamp': headers["Timestamp"],
-            'authToken': headers["AuthToken"],
-            'endpointUrl': f'{route}/removeDevice'
-        }
-
-        if verify_sign(signature_json_check, signature, pub_key):
+        if verify_sign(request, pub_key, "removeDevice"):
             try:
-                user_session.query(Device).filter(Device.fingerprint == headers["Fingerprint"], Device.deviceName == body['device']['deviceName']).delete()
+                user_session.query(Device).filter(Device.fingerprint == headers["Fingerprint"], Device.deviceName == request.get_json()['device']['deviceName']).delete()
                 user_session.commit()
 
                 return jsonify(Response(data={}).__dict__)

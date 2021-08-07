@@ -1,9 +1,13 @@
+from app import route
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 import base64
 from Crypto.Hash import SHA
 from Crypto.Signature import PKCS1_PSS
 import json
+
+# Helpers
+from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
 
 def generate_keys():
     modulus_length = 2048
@@ -22,11 +26,31 @@ def decrypt_rsa(encoded_encrypted_msg, key):
     decoded_decrypted_msg = encryptor.decrypt(decoded_encrypted_msg)
     return decoded_decrypted_msg.decode()
 
-def verify_sign(data_to_verify, signature, key):
-    verifier = PKCS1_PSS.new(key)
-    digest = SHA.new(bytes(json.dumps(data_to_verify), 'utf-8'))
+def verify_sign(request, key, endpoint):
+    headers = get_headers(request, with_fingerprint)
+
+    pub_key = key[0]
+    pub_key = RSA.importKey(pub_key)
+    
+    try:
+        body = request.get_json()
+        if body == None:
+            body = {}
+    except:
+        body = {}
+
+    signature_json_check = {
+        'headers': headers,
+        'body': body,
+        'timestamp': headers["Timestamp"],
+        'authToken': headers["AuthToken"],
+        'endpointUrl': f'{route}/{endpoint}'
+    }
+
+    verifier = PKCS1_PSS.new(pub_key)
+    digest = SHA.new(bytes(json.dumps(signature_json_check), 'utf-8'))
     print(digest)
-    if verifier.verify(digest, bytes.fromhex(signature)):
+    if verifier.verify(digest, bytes.fromhex(request.headers['Signature'])):
         return True
     else:
         return False
