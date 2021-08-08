@@ -51,7 +51,7 @@ async def get_devices():
             return jsonify(ErrorResponse(
                         errors = [error]).__dict__)
 
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.id == headers['deviceId']).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.id == headers['DeviceId']).one()
 
         if verify_sign(request, pub_key, "getDevices"):
             devices_db = user_session.query(Device).filter(Device.userId == userId).all()
