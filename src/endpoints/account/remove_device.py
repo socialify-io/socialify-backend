@@ -54,7 +54,7 @@ async def remove_device():
         pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == headers["Fingerprint"]).one()
 
         if verify_sign(request, pub_key, "removeDevice"):
-            user_session.query(Device).filter(Device.id == id).delete()
+            user_session.query(Device).filter(Device.id == headers['DeviceId']).delete()
             user_session.commit()
 
             return jsonify(Response(data={}).__dict__)
