@@ -58,5 +58,9 @@ def test_new_device(client):
     f.write(str(priv_key))
     f.close()
 
+    f = open("tests/id.txt", "w")
+    f.write(json_resp['data'][0]['id'])
+    f.close()
+
     assert resp.status_code == 200
     assert json_resp['success'] == True

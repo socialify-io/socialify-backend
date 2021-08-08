@@ -24,22 +24,19 @@ def test_remove_device(client):
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
+    with open("tests/id.txt", "r") as f:
+        id = f.read()
+
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers("removeDevice")
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()})
-
-    payload = {
-        'device': {
-            'deviceName': 'Unit test',
-            'fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()
-        }
-    }
+        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
+        'DeviceId': id})
 
     signature_json = {
         'headers': headers,
-        'body': payload,
+        'body': {},
         'timestamp': headers['Timestamp'],
         'authToken': headers['AuthToken'],
         'endpointUrl': f'{route}/removeDevice'
@@ -53,7 +50,7 @@ def test_remove_device(client):
     resp = client.post(
         f'{route}/removeDevice',
         headers=headers,
-        json=payload
+        json={}
     )
 
     json_resp = json.loads(resp.data.decode('utf8'))

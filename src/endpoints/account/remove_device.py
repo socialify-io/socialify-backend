@@ -40,13 +40,13 @@ async def remove_device():
 
     if verify_authtoken(headers, "removeDevice"):
         try:
-            userId = user_session.query(Device.userId).filter(Device.fingerprint == headers["Fingerprint"]).one()
+            userId = user_session.query(Device.userId).filter(Device.id == headers["DeviceId"]).one()
             userId = int(userId[0])
 
         except:
             error = ApiError(
-                code=Error().InvalidFingerprint,
-                reason='Fingerprint is not valid. Device may be deleted.'
+                code=Error().InvalidDeviceId,
+                reason='Device id is not valid. Device may be deleted.'
             ).__dict__
 
             return jsonify(ErrorResponse(
@@ -55,19 +55,11 @@ async def remove_device():
         pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == headers["Fingerprint"]).one()
 
         if verify_sign(request, pub_key, "removeDevice"):
-            try:
-                user_session.query(Device).filter(Device.fingerprint == headers["Fingerprint"], Device.deviceName == request.get_json()['device']['deviceName']).delete()
-                user_session.commit()
+            user_session.query(Device).filter(Device.id == headers["DeviceId"]).delete()
+            user_session.commit()
 
-                return jsonify(Response(data={}).__dict__)
-            except:
-                error = ApiError(
-                    code=Error.InvalidRequestPayload,
-                    reason='Some params in payload are not valid.'
-                ).__dict__
-
-                return jsonify(ErrorResponse(
-                    errors=[error]).__dict__)
+            return jsonify(Response(data={}).__dict__)
+            
         else:
             error = ApiError(
                 code=Error.InvalidSignature,

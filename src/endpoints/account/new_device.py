@@ -99,12 +99,14 @@ async def new_device():
                     timestamp=date,
                     last_active=date,
                     status=Status().Inactive
-                )   
+                )
 
                 user_session.add(new_device)
                 user_session.commit()
 
-                return jsonify(Response(data={}).__dict__)
+                deviceId = user_session.query(Device.id).filter(Device == Device).one()
+
+                return jsonify(Response(data={'id': deviceId}).__dict__)
             else:
                 error = ApiError(
                 code=Error().InvalidPassword,

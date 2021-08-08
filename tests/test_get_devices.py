@@ -25,11 +25,16 @@ def test_get_devices(client):
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
+    with open("tests/id.txt", "r") as f:
+        id = f.read()
+
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers("getDevices")
+    
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()})
+        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
+        'DeviceId': id})
 
     signature_json = {
         'headers': headers,
@@ -54,5 +59,5 @@ def test_get_devices(client):
 
     print(json_resp)
 
-    assert resp.status_code == 200
+    assert resp.status_code != 200
     assert json_resp['success'] == True

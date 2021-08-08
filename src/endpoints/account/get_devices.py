@@ -40,19 +40,19 @@ async def get_devices():
 
     if verify_authtoken(headers, "getDevices"):
         try:
-            userId = user_session.query(Device.userId).filter(Device.fingerprint == headers["Fingerprint"]).one()
+            userId = user_session.query(Device.userId).filter(Device.id == headers["DeviceId"]).one()
             userId = int(userId[0])
 
         except:
             error = ApiError(
-                code = Error().InvalidFingerprint,
-                reason = 'Fingerprint is not valid. Device may be deleted.'
+                code = Error().InvalidDeviceId,
+                reason = 'Device id is not valid. Device may be deleted.'
             ).__dict__
 
             return jsonify(ErrorResponse(
                         errors = [error]).__dict__)
 
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == headers["Fingerprint"]).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.id == headers["DeviceId"]).one()
 
         if verify_sign(request, pub_key, "getDevices"):
             devices_db = user_session.query(Device).filter(Device.userId == userId).all()
