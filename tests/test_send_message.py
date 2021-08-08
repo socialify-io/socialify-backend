@@ -13,13 +13,16 @@ from Crypto.Hash import SHA
 from Crypto.Signature import PKCS1_PSS
 import hashlib
 
-def test_send_message():
+message_token = ''
+client = ''
+
+def test_connect():
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
     priv_key = RSA.importKey(priv_key_string)
 
-    headers = get_headers("connect")
+    headers = get_headers('connect')
 
     headers.update({
         'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()})
@@ -37,6 +40,24 @@ def test_send_message():
     signature = signer.sign(digest).hex()
     headers.update({'Signature': signature})
 
+    global client
     client = socketio.test_client(app, headers=headers)
-    print(client.get_received())
+
+    global message_token
+    message_token = client.get_received()[0]['args'][0]['data']['messageToken']
+
     assert client.is_connected()
+
+def test_join_room():
+    client.emit('join', {'room': 'test_room'})
+
+def test_send_message():
+    client.emit('message', {'room': 'test_room', 'message': 'testowa wiadomość'})
+
+    assert client.get_received() == []
+
+def test_disconnect():
+    client.disconnect()
+
+    assert client.is_connected() == False
+    

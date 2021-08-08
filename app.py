@@ -73,12 +73,14 @@ def add_header(response):
     return response
 
 # Endpoints
-from src.endpoints import get_key, register, get_devices
-from src.endpoints import new_device
-from src.endpoints import remove_device
-from src.endpoints import report_error
+from src.endpoints.account import get_key, register, get_devices
+from src.endpoints.account import new_device
+from src.endpoints.account import remove_device
+from src.endpoints.account import report_error
 
+from src.endpoints.messages import connect
 from src.endpoints.messages import send_message
+from src.endpoints.messages import disconnect
 
 if __name__ == '__main__':
     app.run()

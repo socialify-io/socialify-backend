@@ -6,11 +6,11 @@ from db.keys_db_declarative import Key
 from db.users_db_declarative import User, Device
 
 # Helpers
-from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
-from ..helpers.verify_authtoken import verify_authtoken
+from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.verify_authtoken import verify_authtoken
+from ...helpers.RSA_helper import decrypt_rsa
 
 # Crypto
-from ..helpers.RSA_helper import decrypt_rsa
 from Crypto.PublicKey import RSA
 import bcrypt
 
@@ -20,11 +20,10 @@ import pytz
 
 # Models
 from models.errors._api_error import ApiError
-
 from models.responses._error_response import ErrorResponse
 from models.responses._response import Response
-
 from models.errors.codes._error_codes import Error
+from models._status_codes import Status
 
 
 @app.route(f'{route}/newDevice', methods=HTTP_METHODS)
@@ -98,7 +97,8 @@ async def new_device():
                     deviceName=body['device']['deviceName'],
                     deviceIP=request.remote_addr,
                     timestamp=date,
-                    last_active=date
+                    last_active=date,
+                    status=Status().Inactive
                 )   
 
                 user_session.add(new_device)

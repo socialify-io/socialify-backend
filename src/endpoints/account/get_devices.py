@@ -5,20 +5,19 @@ from flask import render_template, request, jsonify
 from db.users_db_declarative import Device
 
 # Helpers
-from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
-from ..helpers.verify_authtoken import verify_authtoken
-from ..helpers.RSA_helper import verify_sign
+from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.verify_authtoken import verify_authtoken
+from ...helpers.RSA_helper import verify_sign
 
 # Crypto
 from Crypto.PublicKey import RSA
 
 # Models
 from models.errors._api_error import ApiError
-
 from models.responses._error_response import ErrorResponse
 from models.responses._response import Response
-
 from models.errors.codes._error_codes import Error
+from models._status_codes import Status
 
 
 @app.route(f'{route}/getDevices', methods=HTTP_METHODS)
@@ -65,7 +64,8 @@ async def get_devices():
                     "deviceIP": device.deviceIP,
                     "os": device.os,
                     "deviceCreationDate": device.timestamp,
-                    "deviceLastActive": device.last_active
+                    "deviceLastActive": device.last_active,
+                    "status": device.status
                 }
                 devices.append(device_json)
 

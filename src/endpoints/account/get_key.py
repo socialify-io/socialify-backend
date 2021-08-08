@@ -5,9 +5,9 @@ from flask import render_template, request, jsonify
 from db.keys_db_declarative import Key
 
 # Helpers
-from ..helpers.RSA_helper import generate_keys
-from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
-from ..helpers.verify_authtoken import verify_authtoken
+from ...helpers.RSA_helper import generate_keys
+from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.verify_authtoken import verify_authtoken
 
 # Models
 from models.errors._api_error import ApiError

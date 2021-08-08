@@ -6,11 +6,11 @@ from db.keys_db_declarative import Key
 from db.users_db_declarative import User
 
 # Helpers
-from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
-from ..helpers.verify_authtoken import verify_authtoken
+from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.verify_authtoken import verify_authtoken
+from ...helpers.RSA_helper import decrypt_rsa
 
 # Crypto
-from ..helpers.RSA_helper import decrypt_rsa
 from Crypto.PublicKey import RSA
 import bcrypt
 

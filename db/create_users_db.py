@@ -22,6 +22,7 @@ conn.execute('''CREATE TABLE devices
         timestamp TIMESTAMP NOT NULL,
         last_active TIMESTAMP NOT NULL,
         messageToken VARCHAR(46) NULL,
+        status INTEGER NOT NULL,
 
         FOREIGN KEY (userId) REFERENCES users (id)
      )''')

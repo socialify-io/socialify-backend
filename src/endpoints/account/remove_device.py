@@ -5,9 +5,9 @@ from flask import render_template, request, jsonify
 from db.users_db_declarative import Device
 
 # Helpers
-from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
-from ..helpers.RSA_helper import verify_sign
-from ..helpers.verify_authtoken import verify_authtoken
+from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.RSA_helper import verify_sign
+from ...helpers.verify_authtoken import verify_authtoken
 
 # Crypto
 from Crypto.PublicKey import RSA

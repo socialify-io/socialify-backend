@@ -2,8 +2,9 @@ from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
+from sqlalchemy.sql.expression import null
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import TEXT, VARCHAR, TIMESTAMP, INTEGER
+from sqlalchemy.sql.sqltypes import BOOLEAN, TEXT, VARCHAR, TIMESTAMP, INTEGER
 
 UserBase = declarative_base()
 
@@ -33,6 +34,7 @@ class Device(UserBase):
     timestamp = Column(TIMESTAMP, nullable=False)
     last_active = Column(TIMESTAMP, nullable=False)
     messageToken = Column(VARCHAR(46), nullable=True)
+    status = Column(INTEGER, nullable=False)
 
 
 engine = create_engine('sqlite:///db/users.db')

@@ -20,7 +20,10 @@ from models.responses._response import Response
 
 from models.errors.codes._error_codes import Error
 
-@socketio.event
-def message(data):
-    room = data.pop('room')
-    send(data.pop('message'), room=room)
+@socketio.on('join')
+def on_join_room(data):
+    join_room(data['room'])
+
+@socketio.on('leave')
+def on_leave_room(data):
+    leave_room(data['room'])

@@ -5,8 +5,8 @@ from flask import render_template, request, jsonify
 from db.error_reports_db_declarative import ErrorReport
 
 # Helpers
-from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
-from ..helpers.verify_authtoken import verify_authtoken
+from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.verify_authtoken import verify_authtoken
 
 # Datatime
 from datetime import datetime
