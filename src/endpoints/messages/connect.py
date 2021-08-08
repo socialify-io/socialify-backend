@@ -51,7 +51,7 @@ def connect():
                         errors = [error]).__dict__)
             return
 
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == headers["Fingerprint"]).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.id == headers['DeviceId']).one()
 
         if verify_sign(request, pub_key, 'connect'):
             message_token_core = hashlib.sha1(bytes(

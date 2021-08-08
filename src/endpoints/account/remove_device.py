@@ -26,7 +26,6 @@ async def remove_device():
     if request.method != 'POST':
         return render_template('what_are_you_looking_for.html')
     try:
-        id = request.headers['DeviceId']
         headers = get_headers(request, with_fingerprint)
 
     except:
@@ -40,7 +39,7 @@ async def remove_device():
 
     if verify_authtoken(headers, "removeDevice"):
         try:
-            userId = user_session.query(Device.userId).filter(Device.id == id).one()
+            userId = user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()
             userId = int(userId[0])
 
         except:
