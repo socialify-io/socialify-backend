@@ -133,3 +133,4 @@ dmypy.json
 *.db
 QUICK_ENC.py
 tests/key.pem
+tests/id.txt

@@ -26,7 +26,7 @@ async def get_devices():
         return render_template('what_are_you_looking_for.html')
 
     try:
-        signature = request.headers['Signature']
+        id = request.headers['DeviceId']
         headers = get_headers(request, with_fingerprint)
 
     except:
@@ -40,7 +40,7 @@ async def get_devices():
 
     if verify_authtoken(headers, "getDevices"):
         try:
-            userId = user_session.query(Device.userId).filter(Device.id == headers["DeviceId"]).one()
+            userId = user_session.query(Device.userId).filter(Device.id == id).one()
             userId = int(userId[0])
 
         except:

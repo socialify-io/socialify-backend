@@ -102,9 +102,10 @@ async def new_device():
                 )
 
                 user_session.add(new_device)
-                user_session.commit()
+                user_session.flush()
+                deviceId = new_device.id
 
-                deviceId = user_session.query(Device.id).filter(Device == Device).one()
+                user_session.commit()
 
                 return jsonify(Response(data={'id': deviceId}).__dict__)
             else:
