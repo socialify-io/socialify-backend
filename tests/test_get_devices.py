@@ -59,5 +59,5 @@ def test_get_devices(client):
 
     print(json_resp)
 
-    assert resp.status_code != 200
+    assert resp.status_code == 200
     assert json_resp['success'] == True
