@@ -39,7 +39,7 @@ async def get_devices():
 
     if verify_authtoken(headers, "getDevices"):
         try:
-            userId = user_session.query(Device.userId).filter(Device.id == id).one()
+            userId = user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()
             userId = int(userId[0])
 
         except:
