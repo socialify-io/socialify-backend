@@ -20,12 +20,16 @@ def test_connect():
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
+    with open("tests/id.txt", "r") as f:
+        id = f.read()
+
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers('connect')
 
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest()})
+        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
+        'DeviceId': id})
 
     signature_json = {
         'headers': headers,
