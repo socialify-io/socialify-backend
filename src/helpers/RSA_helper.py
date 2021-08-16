@@ -56,8 +56,6 @@ def verify_sign(request, key, endpoint):
     for value in signature_json_check:
         mapped_signature_json_check += f'{value}={signature_json_check[value]}' + '&'
 
-    print(mapped_signature_json_check)
-
     verifier = PKCS1_v1_5.new(pub_key)
     digest = SHA.new(bytes(mapped_signature_json_check, 'utf-8'))
     print(json.dumps(signature_json_check))

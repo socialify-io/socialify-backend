@@ -31,18 +31,13 @@ def connect():
             reason = 'Some required request headers not found.'
         ).__dict__
 
-        print('Some required request headers not found.')
-
         emit('connect', ErrorResponse(
                         errors = [error]).__dict__)
         return
 
     if verify_authtoken(headers, 'connect'):
         try:
-            print(headers['Fingerprint'])
             userId = user_session.query(Device.userId).filter(Device.fingerprint == headers['Fingerprint']).one()
-            print('dupa')
-            print(userId)
             userId = int(userId[0])
 
         except:
@@ -50,8 +45,6 @@ def connect():
                 code = Error().InvalidFingerprint,
                 reason = 'Fingerprint is not valid. Device may be deleted.'
             ).__dict__
-
-            print('Fingerprint is not valid. Device may be deleted.')
 
             emit('connect', ErrorResponse(
                         errors = [error]).__dict__)
@@ -69,7 +62,6 @@ def connect():
 
             user_session.commit()
 
-            print("requeścik podpisany picuś glancuś 🤙")
             emit('connect', Response(data={'messageToken': message_token}).__dict__)
             return
         else: 
@@ -77,8 +69,6 @@ def connect():
                 code = Error().InvalidSignature,
                 reason = 'Signature is not valid.'
             ).__dict__
-
-            print('Signature is not valid.')
 
             emit('connect', ErrorResponse(
                         errors = [error]).__dict__)
@@ -88,8 +78,6 @@ def connect():
             code = Error().InvalidAuthToken,
             reason = 'Your authorization token is not valid.'
         ).__dict__
-
-        print('Your authorization token is not valid.')
 
         emit('connect', ErrorResponse(
                         errors = [error]).__dict__)

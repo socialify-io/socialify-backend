@@ -52,8 +52,6 @@ def test_remove_device(client):
     for value in signature_json:
         mapped_signature_json += f'{value}={signature_json[value]}' + '&'
 
-    print(mapped_signature_json)
-
     digest = SHA.new(bytes(mapped_signature_json, 'utf-8'))
     signer = PKCS1_v1_5.new(priv_key)
     signature = base64.b64encode(signer.sign(digest))
