@@ -17,6 +17,7 @@ class Error(object):
     # Request sign
     InvalidAuthToken = 8
     InvalidHeaders = 9
-    InvalidDeviceId = 10
-    InvalidSignature = 11
-    InvalidRequestPayload = 12
+    InvalidFingerprint = 10
+    InvalidDeviceId = 11
+    InvalidSignature = 12
+    InvalidRequestPayload = 13

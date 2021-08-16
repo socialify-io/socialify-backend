@@ -22,5 +22,6 @@ from models.errors.codes._error_codes import Error
 
 @socketio.event
 def message(data):
+    print("sended")
     room = data.pop('room')
     send(data.pop('message'), room=room)

@@ -8,7 +8,7 @@ from models.responses._error_response import ErrorResponse
 from models.errors.codes._error_codes import Error
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
-socketio = SocketIO(app)
+socketio = SocketIO(app, logger=True, engineio_logger=True, policy_server=False, manage_session=False, cors_allowed_origins="*")
 
 HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']
 
@@ -81,7 +81,3 @@ from src.endpoints.account import report_error
 from src.endpoints.messages import connect
 from src.endpoints.messages import send_message
 from src.endpoints.messages import disconnect
-
-if __name__ == '__main__':
-    app.run()
-    socketio.run(app)

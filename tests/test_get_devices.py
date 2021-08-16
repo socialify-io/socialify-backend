@@ -1,8 +1,9 @@
 import pytest
 import json
 from get_headers import get_headers
-from Crypto.Signature import PKCS1_PSS
+from Crypto.Signature import PKCS1_v1_5
 import hashlib
+import base64
 
 import os
 import sys
@@ -36,17 +37,26 @@ def test_get_devices(client):
         'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
         'DeviceId': id})
 
+    mapped_headers = ""
+    mapped_signature_json = ""
+
+    for value in headers:
+        mapped_headers += f'{value}={headers[value]}' + '&'
+    
     signature_json = {
-        'headers': headers,
-        'body': {},
-        'timestamp': headers['Timestamp'],
-        'authToken': headers['AuthToken'],
+        'headers': mapped_headers,
+        'body': '{}',
+        'timestamp': str(headers['Timestamp']),
+        'authToken': str(headers['AuthToken']),
         'endpointUrl': f'{route}/getDevices'
     }
 
-    digest = SHA.new(bytes(json.dumps(signature_json), 'utf-8'))
-    signer = PKCS1_PSS.new(priv_key)
-    signature = signer.sign(digest).hex()
+    for value in signature_json:
+        mapped_signature_json += f'{value}={signature_json[value]}' + '&'
+
+    digest = SHA.new(bytes(mapped_signature_json, 'utf-8'))
+    signer = PKCS1_v1_5.new(priv_key)
+    signature = base64.b64encode(signer.sign(digest))
     headers.update({'Signature': signature})
 
     resp = client.post(

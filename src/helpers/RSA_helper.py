@@ -3,7 +3,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 import base64
 from Crypto.Hash import SHA
-from Crypto.Signature import PKCS1_PSS
+from Crypto.Signature import PKCS1_v1_5
 import json
 
 # Helpers
@@ -17,14 +17,14 @@ def generate_keys():
 def encrypt_rsa(a_message, key):
     encryptor = PKCS1_OAEP.new(key)
     encrypted_msg = encryptor.encrypt(bytes(a_message, 'utf-8'))
-    encoded_encrypted_msg = base64.b64encode(encrypted_msg)
-    return encoded_encrypted_msg
+    encoded_msg = base64.b64encode(encrypted_msg)
+    return encoded_msg
 
-def decrypt_rsa(encoded_encrypted_msg, key):
+def decrypt_rsa(encoded_msg, key):
     encryptor = PKCS1_OAEP.new(key)
-    decoded_encrypted_msg = base64.b64decode(encoded_encrypted_msg)
-    decoded_decrypted_msg = encryptor.decrypt(decoded_encrypted_msg)
-    return decoded_decrypted_msg.decode()
+    decoded_encrypted_msg = base64.b64decode(encoded_msg)
+    decoded_msg = encryptor.decrypt(decoded_encrypted_msg)
+    return decoded_msg.decode()
 
 def verify_sign(request, key, endpoint):
     headers = get_headers(request, with_fingerprint)
@@ -39,18 +39,29 @@ def verify_sign(request, key, endpoint):
     except:
         body = {}
 
+    mapped_headers = ""
+    mapped_signature_json_check = ""
+
+    for value in headers:
+        mapped_headers += f'{value}={headers[value]}' + '&'
+
     signature_json_check = {
-        'headers': headers,
-        'body': body,
-        'timestamp': headers["Timestamp"],
-        'authToken': headers["AuthToken"],
+        'headers': mapped_headers,
+        'body': '{}',
+        'timestamp': str(headers["Timestamp"]),
+        'authToken': str(headers["AuthToken"]),
         'endpointUrl': f'{route}/{endpoint}'
     }
 
-    verifier = PKCS1_PSS.new(pub_key)
-    digest = SHA.new(bytes(json.dumps(signature_json_check), 'utf-8'))
-    print(digest)
-    if verifier.verify(digest, bytes.fromhex(request.headers['Signature'])):
+    for value in signature_json_check:
+        mapped_signature_json_check += f'{value}={signature_json_check[value]}' + '&'
+
+    print(mapped_signature_json_check)
+
+    verifier = PKCS1_v1_5.new(pub_key)
+    digest = SHA.new(bytes(mapped_signature_json_check, 'utf-8'))
+    print(json.dumps(signature_json_check))
+    if verifier.verify(digest, base64.b64decode(request.headers['Signature'])):
         return True
     else:
         return False

@@ -22,6 +22,7 @@ from models.errors.codes._error_codes import Error
 
 @socketio.on('join')
 def on_join_room(data):
+    print("joined")
     join_room(data['room'])
 
 @socketio.on('leave')
