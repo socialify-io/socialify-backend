@@ -12,7 +12,7 @@ def get_headers(request, with_fingerprint):
     }
 
     if with_fingerprint:
-        headers.update({'Fingerprint': request.headers['Fingerprint']})
-        headers.update({'DeviceId': request.headers['DeviceId']})
+        headers.update({'Fingerprint': request.headers['Fingerprint'],
+                        'DeviceId': request.headers['DeviceId']})
 
     return headers

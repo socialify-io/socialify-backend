@@ -80,4 +80,5 @@ from src.endpoints.account import report_error
 
 from src.endpoints.messages import connect
 from src.endpoints.messages import send_message
+from src.endpoints.messages import rooms
 from src.endpoints.messages import disconnect

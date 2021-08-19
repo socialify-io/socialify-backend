@@ -21,7 +21,7 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 @socketio.on('join')
-def on_join_room(data):
+def join(data):
     print("joined")
     join_room(data['room'])
 
