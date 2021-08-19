@@ -13,6 +13,7 @@ from ...helpers.RSA_helper import decrypt_rsa
 # Crypto
 from Crypto.PublicKey import RSA
 import bcrypt
+import base64
 
 # Models
 from models.errors._api_error import ApiError
@@ -89,9 +90,15 @@ async def register():
 
                 hashed_pass = bcrypt.hashpw(bytes(password, 'utf-8'), bcrypt.gensalt())
 
+                avatar = app.static_folder+ '/images/socialify-logo.png'
+                encoded_avatar = ""
+                with open(avatar, "rb") as image_file:
+                    encoded_avatar = base64.b64encode(image_file.read())
+
                 new_user = User(
                     username=body['username'],
-                    password=hashed_pass
+                    password=hashed_pass,
+                    avatar=encoded_avatar
                 )
 
                 user_session.add(new_user)

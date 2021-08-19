@@ -6,7 +6,8 @@ conn.execute('''CREATE TABLE users
     (
         id INTEGER PRIMARY KEY ASC, 
         username TEXT NOT NULL, 
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        avatar TEXT NOT NULL
      )''')
 
 conn.execute('''CREATE TABLE devices 
