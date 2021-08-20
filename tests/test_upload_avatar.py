@@ -21,7 +21,7 @@ def client():
 
     yield client
 
-def test_remove_device(client):
+def test_upload_avatar(client):
     with open('tests/key.pem', 'r') as f:
         priv_key_string = f.read()
 
@@ -30,7 +30,7 @@ def test_remove_device(client):
 
     priv_key = RSA.importKey(priv_key_string)
 
-    headers = get_headers('removeDevice')
+    headers = get_headers('uploadAvatar')
     headers.update({
         'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
         'DeviceId': id})
@@ -40,13 +40,17 @@ def test_remove_device(client):
 
     for value in headers:
         mapped_headers += f'{value}={headers[value]}' + '&'
+
+    payload = {
+        'avatar': base64.b64encode(open(app.static_folder+ '/images/socialify-logo.png', 'rb').read())
+    }
     
     signature_json = {
         'headers': mapped_headers,
-        'body': '{}',
+        'body': f'{json.dumps(payload)}',
         'timestamp': str(headers['Timestamp']),
         'authToken': str(headers['AuthToken']),
-        'endpointUrl': f'{route}/removeDevice'
+        'endpointUrl': f'{route}/uploadAvatar'
     }
 
     for value in signature_json:
@@ -58,9 +62,9 @@ def test_remove_device(client):
     headers.update({'Signature': signature})
 
     resp = client.post(
-        f'{route}/removeDevice',
+        f'{route}/uploadAvatar',
         headers=headers,
-        json={}
+        json=payload
     )
 
     json_resp = json.loads(resp.data.decode('utf8'))

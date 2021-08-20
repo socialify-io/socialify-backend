@@ -40,7 +40,7 @@ async def register():
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
 
-    if verify_authtoken(headers, "register"):
+    if verify_authtoken(headers, 'register'):
         body = request.get_json(force=True)
 
         pub_key_string = body['pubKey']
@@ -87,13 +87,9 @@ async def register():
                             errors = [error]).__dict__)
 
             else:
-
                 hashed_pass = bcrypt.hashpw(bytes(password, 'utf-8'), bcrypt.gensalt())
 
-                avatar = app.static_folder+ '/images/socialify-logo.png'
-                encoded_avatar = ""
-                with open(avatar, "rb") as image_file:
-                    encoded_avatar = base64.b64encode(image_file.read())
+                encoded_avatar = base64.b64encode(open(app.static_folder+ '/images/socialify-logo.png', 'rb').read())
 
                 new_user = User(
                     username=body['username'],
