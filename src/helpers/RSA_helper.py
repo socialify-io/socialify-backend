@@ -47,7 +47,7 @@ def verify_sign(request, key, endpoint):
 
     signature_json_check = {
         'headers': mapped_headers,
-        'body': f'{json.dupms(body)}',
+        'body': f'{body}',
         'timestamp': str(headers["Timestamp"]),
         'authToken': str(headers["AuthToken"]),
         'endpointUrl': f'{route}/{endpoint}'

@@ -73,12 +73,9 @@ def add_header(response):
     return response
 
 # Endpoints
-from src.endpoints.account import get_key, register, get_devices
+from src.endpoints.account import get_key, register, get_devices, upload_avatar
 from src.endpoints.account import new_device
 from src.endpoints.account import remove_device
 from src.endpoints.account import report_error
 
-from src.endpoints.messages import connect
-from src.endpoints.messages import send_message
-from src.endpoints.messages import rooms
-from src.endpoints.messages import disconnect
+from src.endpoints.messages import connect, send_message, rooms, disconnect

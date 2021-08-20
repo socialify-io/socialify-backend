@@ -42,12 +42,12 @@ def test_upload_avatar(client):
         mapped_headers += f'{value}={headers[value]}' + '&'
 
     payload = {
-        'avatar': base64.b64encode(open(app.static_folder+ '/images/socialify-logo.png', 'rb').read())
+        'avatar': base64.b64encode(open(app.static_folder+ '/images/socialify-logo.png', 'rb').read()).decode()
     }
     
     signature_json = {
         'headers': mapped_headers,
-        'body': f'{json.dumps(payload)}',
+        'body': f'{payload}',
         'timestamp': str(headers['Timestamp']),
         'authToken': str(headers['AuthToken']),
         'endpointUrl': f'{route}/uploadAvatar'
