@@ -68,9 +68,11 @@ def test_join_room():
     client.emit('join', {'room': 'test_room'})
 
 def test_send_message():
-    client.emit('message', {'room': 'test_room', 'message': 'testowa wiadomość'})
+    client.emit('message', {'room': 'test_room', 'message': 'Test message'})
 
-    assert client.get_received() == []
+    response = client.get_received()[0]['args']
+    assert response['message'] == 'Test message'
+    assert response['username'] == 'TestAccount123'
 
 def test_disconnect():
     client.disconnect()
