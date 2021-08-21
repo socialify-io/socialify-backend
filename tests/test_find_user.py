@@ -32,8 +32,8 @@ def test_connect():
         'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
         'DeviceId': id})
 
-    mapped_headers = ""
-    mapped_signature_json = ""
+    mapped_headers = ''
+    mapped_signature_json = ''
 
     for value in headers:
         mapped_headers += f'{value}={headers[value]}' + '&'
@@ -64,18 +64,8 @@ def test_connect():
 
     assert client.is_connected()
 
-def test_join_room():
-    client.emit('join', {'room': 'test_room'})
+def test_find_user():
+    client.emit('find_user', {'username': 'TestAcco'})
 
-def test_send_message():
-    client.emit('message', {'room': 'test_room', 'message': 'Test message'})
-
-    response = client.get_received()[0]['args']
-    assert response['message'] == 'Test message'
-    assert response['username'] == 'TestAccount123'
-
-def test_disconnect():
-    client.disconnect()
-
-    assert client.is_connected() == False
+    assert client.get_received()[0]['args'][0][0]['username'] == 'TestAccount123'
 

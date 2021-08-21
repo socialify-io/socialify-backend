@@ -18,28 +18,28 @@ route = f"/api/v{VERSION}"
 # Database
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
- 
+
 from db.keys_db_declarative import KeyBase
 from db.users_db_declarative import UserBase
 from db.error_reports_db_declarative import ErrorReportsBase
 
 key_engine = create_engine('sqlite:///db/keys.db', connect_args={'check_same_thread': False})
 KeyBase.metadata.bind = key_engine
- 
+
 key_DBSession = sessionmaker(bind=key_engine)
 key_session = key_DBSession()
 
 
 user_engine = create_engine('sqlite:///db/users.db', connect_args={'check_same_thread': False})
 UserBase.metadata.bind = user_engine
- 
+
 user_DBSession = sessionmaker(bind=user_engine)
 user_session = user_DBSession()
 
 
 error_reports_engine = create_engine('sqlite:///db/error_reports.db', connect_args={'check_same_thread': False})
 ErrorReportsBase.metadata.bind = error_reports_engine
- 
+
 error_reports_DBSession = sessionmaker(bind=error_reports_engine)
 error_reports_session = error_reports_DBSession()
 
@@ -78,4 +78,4 @@ from src.endpoints.account import new_device
 from src.endpoints.account import remove_device
 from src.endpoints.account import report_error
 
-from src.endpoints.messages import connect, send_message, rooms, disconnect
+from src.endpoints.messages import connect, find_user, send_message, rooms, disconnect
