@@ -29,19 +29,23 @@ def find_user(data):
     results = find_users_in_database(data['username'])
     response = []
 
+    headers = get_headers(request, with_fingerprint)
+    user_id = user_session.query(Device.userId).filter(Device.fingerprint == headers['Fingerprint']).one()[0]
+    username = user_session.query(User.username).filter(User.id == user_id).one()[0]
+
     for user in results:
-        json_model = {
+        if(user[1] != username):
+            json_model = {
                 'id': user[0],
-            'username': user[1],
-            'avatar': user[2]
-        }
-        response.append(json_model)
+                'username': user[1],
+                'avatar': user[2]
+            }
+            response.append(json_model)
 
     emit('find_user', response)
 
 def find_users_in_database(phrase):
     search = "%{}%".format(phrase)
-    #posts = Post.query.fiter(Post.tags.like(search)).all()
     results = user_session.query(User.id, User.username, User.avatar).filter(User.username.like(search)).all()
     return results
 

@@ -48,3 +48,33 @@ def test_register(client):
 
     assert resp.status_code == 200
     assert json_resp['success'] == True
+
+
+def test_register_second_account(client):
+    key = get_key(client)
+    password = 'test_pass123'
+
+    pub_key = RSA.importKey(key)
+    enc_pass = encrypt_rsa(password, pub_key)
+
+    headers = get_headers("register")
+
+    payload = {
+        'username': 'TestAccountSecondary',
+        'password': enc_pass.decode('utf8'),
+        'repeat_password': enc_pass.decode('utf8'),
+        'pubKey': key
+    }
+
+    resp = client.post(
+        f'{route}/register',
+        headers=headers,
+        json=payload
+    )
+
+    json_resp = json.loads(resp.data.decode('utf8'))
+
+    print(json_resp)
+
+    assert resp.status_code == 200
+    assert json_resp['success'] == True
