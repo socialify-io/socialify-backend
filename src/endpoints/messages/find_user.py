@@ -31,8 +31,9 @@ def find_user(data):
 
     for user in results:
         json_model = {
-            'username': user[0],
-            'avatar': user[1]
+            'id': user[0]
+            'username': user[1],
+            'avatar': user[2]
         }
         response.append(json_model)
 
@@ -41,6 +42,6 @@ def find_user(data):
 def find_users_in_database(phrase):
     search = "%{}%".format(phrase)
     #posts = Post.query.fiter(Post.tags.like(search)).all()
-    results = user_session.query(User.username, User.avatar).filter(User.username.like(search)).all()
+    results = user_session.query(User.id, User.username, User.avatar).filter(User.username.like(search)).all()
     return results
 
