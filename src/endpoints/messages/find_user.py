@@ -31,7 +31,7 @@ def find_user(data):
 
     for user in results:
         json_model = {
-            'id': user[0]
+                'id': user[0],
             'username': user[1],
             'avatar': user[2]
         }
