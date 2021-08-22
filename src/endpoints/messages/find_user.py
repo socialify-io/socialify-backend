@@ -25,8 +25,8 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 @socketio.event
-def find_user(data):
-    results = find_users_in_database(data['username'])
+def find_user(phrase):
+    results = find_users_in_database(phrase)
     response = []
 
     headers = get_headers(request, with_fingerprint)

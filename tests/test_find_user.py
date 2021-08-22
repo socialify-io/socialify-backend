@@ -65,7 +65,7 @@ def test_connect():
     assert client.is_connected()
 
 def test_find_user():
-    client.emit('find_user', {'username': 'TestAcco'})
+    client.emit('find_user', 'TestAcco')
 
     assert client.get_received()[0]['args'][0][0]['username'] == 'TestAccountSecondary'
 
