@@ -27,7 +27,7 @@ from models.errors.codes._error_codes import Error
 async def register():
     if request.method != 'POST':
         return render_template('what_are_you_looking_for.html')
-    
+
     try:
         headers = get_headers(request, without_fingerprint)
 
@@ -36,7 +36,7 @@ async def register():
             code = Error().InvalidHeaders,
             reason = 'Some required request headers not found.'
         ).__dict__
-        
+
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
 
@@ -76,7 +76,7 @@ async def register():
 
         if password == repeat_password:
             users = user_session.query(User.username).all()
-            
+
             if (body['username'],) in users:
                 error = ApiError(
                     code = Error().InvalidUsername,
@@ -94,7 +94,8 @@ async def register():
                 new_user = User(
                     username=body['username'],
                     password=hashed_pass,
-                    avatar=encoded_avatar
+                    avatar=encoded_avatar,
+                    sids='[]'
                 )
 
                 user_session.add(new_user)
@@ -109,7 +110,7 @@ async def register():
                 code = Error().InvalidRepeatPassword,
                 reason = 'Passwords are not same.'
             ).__dict__
-            
+
             return jsonify(ErrorResponse(
                         errors = [error]).__dict__)
     else:

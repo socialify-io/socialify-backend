@@ -2,17 +2,18 @@ import sqlite3 as sql
 
 conn = sql.connect('db/users.db')
 
-conn.execute('''CREATE TABLE users 
+conn.execute('''CREATE TABLE users
     (
-        id INTEGER PRIMARY KEY ASC, 
-        username TEXT NOT NULL, 
+        id INTEGER PRIMARY KEY ASC,
+        username TEXT NOT NULL,
         password TEXT NOT NULL,
-        avatar TEXT NOT NULL
+        avatar TEXT NOT NULL,
+        sids TEXT NOT NULL
      )''')
 
-conn.execute('''CREATE TABLE devices 
+conn.execute('''CREATE TABLE devices
     (
-        id INTEGER PRIMARY KEY ASC, 
+        id INTEGER PRIMARY KEY ASC,
         userId INTEGER NOT NULL,
         appVersion TEXT NOT NULL,
         os TEXT NOT NULL,

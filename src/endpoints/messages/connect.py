@@ -1,11 +1,11 @@
 from app import socketio, user_session
 from flask_socketio import emit
 from flask import request
-
+import json
 import hashlib
 
 # Database
-from db.users_db_declarative import Device
+from db.users_db_declarative import User, Device
 
 # Helpers
 from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
@@ -56,15 +56,22 @@ def connect():
             message_token_core = hashlib.sha1(bytes(
                 f'{headers["Timestamp"]}.{signature}.{headers["Fingerprint"]}', 'utf-8')).hexdigest().upper()
             message_token = f'#AUTH.{message_token_core}'
-            
+
             user_session.query(Device).filter(Device.userId == userId).filter(Device.fingerprint == headers['Fingerprint']).update(dict(messageToken=message_token))
             user_session.query(Device).filter(Device.userId == userId).filter(Device.fingerprint == headers['Fingerprint']).update(dict(status=Status().Active))
+
+            sids = json.loads(user_session.query(User.sids).filter(User.id ==
+                userId).one()[0])
+            sids.append(request.sid)
+            sids = json.dumps(sids)
+            user_session.query(User).filter(User.id ==
+                    userId).update({'sids': sids})
 
             user_session.commit()
 
             emit('connect', Response(data={'messageToken': message_token}).__dict__)
             return
-        else: 
+        else:
             error = ApiError(
                 code = Error().InvalidSignature,
                 reason = 'Signature is not valid.'
