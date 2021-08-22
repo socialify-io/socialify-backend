@@ -78,4 +78,4 @@ from src.endpoints.account import new_device
 from src.endpoints.account import remove_device
 from src.endpoints.account import report_error
 
-from src.endpoints.messages import connect, find_user, send_dm, send_message, rooms, disconnect
+from src.endpoints.messages import connect, find_user, dm, send_message, rooms, disconnect
