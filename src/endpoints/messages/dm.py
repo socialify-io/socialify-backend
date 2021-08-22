@@ -35,7 +35,7 @@ def send_dm(data):
 
     receiver_id = data.pop('receiverId')
 
-    sids = users_session.query(User.sids).filter(User.id
+    sids = user_session.query(User.sids).filter(User.id
             ==receiver_id).one()[0].json()
     sids.append(request.sid)
 
