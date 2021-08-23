@@ -35,9 +35,15 @@ def send_dm(data):
 
     receiver_id = data.pop('receiverId')
 
-    sids = user_session.query(User.sids).filter(User.id
-            ==receiver_id).one()[0].json()
+    sids = json.loads(user_session.query(User.sids).filter(User.id == receiver_id).one()[0])
     sids.append(request.sid)
 
-    emit('send_dm', data.pop('message'), to=sids)
+    emit_model = {
+        'id': user_id,
+        'username': username,
+        'message': data.pop('message'),
+        'date': str(datetime.utcfromtimestamp(headers['Timestamp']).replace(tzinfo=pytz.utc))
+    }
+
+    emit('send_dm', emit_model, to=sids)
 

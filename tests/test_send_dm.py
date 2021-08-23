@@ -65,7 +65,7 @@ def test_connect():
     assert client.is_connected()
 
 def test_send_dm():
-    client.emit('find_user', {'username': 'TestAcco'})
+    client.emit('find_user', 'TestAcco')
     receiver_id = client.get_received()[0]['args'][0][0]['id']
 
     client.emit('send_dm', {
@@ -73,9 +73,7 @@ def test_send_dm():
         'message': 'Test message'
         })
 
-    response = client.get_received()[0]['args']
-
+    response = client.get_received()[0]['args'][0]
 
     assert response['message'] == 'Test message'
     assert response['username'] == 'TestAccount123'
-
