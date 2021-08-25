@@ -34,6 +34,8 @@ def message(data):
     emit_model = {
         'username': username,
         'message': data.pop('message'),
-        'date': str(datetime.utcfromtimestamp(headers['Timestamp']).replace(tzinfo=pytz.utc))
+        'date':
+        str(datetime.utcfromtimestamp(headers['Timestamp']).replace(tzinfo=pytz.utc)),
+        'roomId': room
     }
     socketio.emit('message', emit_model, room=room)
