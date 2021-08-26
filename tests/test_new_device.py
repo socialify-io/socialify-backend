@@ -52,14 +52,13 @@ def test_new_device(client):
 
     json_resp = json.loads(resp.data.decode('utf8'))
     print(json_resp)
-    print('dupa')
 
     f = open("tests/key.pem", "w")
     f.write(str(priv_key))
     f.close()
 
     f = open("tests/id.txt", "w")
-    f.write(str(json_resp['data']['id']))
+    f.write(str(json_resp['data']['deviceId']))
     f.close()
 
     assert resp.status_code == 200
