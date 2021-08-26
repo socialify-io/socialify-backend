@@ -39,7 +39,8 @@ def send_dm(data):
     sids.append(request.sid)
 
     emit_model = {
-        'id': user_id,
+        'receiverId': receiver_id,
+        'senderId': user_id,
         'username': username,
         'message': data.pop('message'),
         'date': str(datetime.utcfromtimestamp(headers['Timestamp']).replace(tzinfo=pytz.utc))

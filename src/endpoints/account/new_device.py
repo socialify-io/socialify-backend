@@ -39,7 +39,7 @@ async def new_device():
             code = Error().InvalidHeaders,
             reason = 'Some required request headers not found.'
         ).__dict__
-        
+
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
 
@@ -60,7 +60,7 @@ async def new_device():
 
             return jsonify(ErrorResponse(
                 errors=[error]).__dict__)
-        
+
         priv_key = RSA.importKey(priv_key)
 
         try:
@@ -84,12 +84,13 @@ async def new_device():
                 key_session.query(Key).filter(Key.pub_key==pub_key_string).delete()
                 key_session.commit()
 
-                userId = user_session.query(User.id).filter(User.username == body['username']).one()
+                user_id = user_session.query(User.id).filter(User.username ==
+                        body['username']).one()[0]
 
                 date = datetime.utcfromtimestamp(headers['Timestamp']).replace(tzinfo=pytz.utc)
 
                 new_device = Device(
-                    userId=userId[0],
+                    userId=user_id,
                     appVersion=headers['AppVersion'],
                     os=headers['OS'],
                     pubKey=body['device']['signPubKey'],
@@ -103,11 +104,18 @@ async def new_device():
 
                 user_session.add(new_device)
                 user_session.flush()
-                deviceId = new_device.id
+                device_id = new_device.id
 
                 user_session.commit()
 
-                return jsonify(Response(data={'id': deviceId}).__dict__)
+                response = Response(
+                    data = {
+                        "deviceId": f'{device_id}',
+                        "userId": f'{user_id}'
+                    }
+                )
+
+                return jsonify(response.__dict__)
             else:
                 error = ApiError(
                 code=Error().InvalidPassword,
