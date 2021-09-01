@@ -1,5 +1,6 @@
-from app import app, HTTP_METHODS, route, user_session
+from app import app, socketio, HTTP_METHODS, route, user_session
 from flask import render_template, request, jsonify
+from flask_socketio import emit
 
 # Database
 from db.users_db_declarative import User
@@ -19,9 +20,20 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 from models._status_codes import Status
 
+@socketio.event
+def get_information_about_account(id):
+    user = user_session.query(User).filter(User.id == id).one()
+
+    response = {
+        "username": str(user.username),
+        "avatar": str(user.avatar.decode()),
+        "id": str(user.id)
+    }
+
+    emit('get_information_about_account', response)
 
 @app.route(f'{route}/getInformationAboutAccount', methods=HTTP_METHODS)
-async def get_infromation_about_account():
+async def get_information_about_account_http():
     if request.method != 'POST':
         return render_template('what_are_you_looking_for.html')
 
