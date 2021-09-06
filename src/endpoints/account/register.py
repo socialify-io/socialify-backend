@@ -95,6 +95,7 @@ async def register():
                     username=body['username'],
                     password=hashed_pass,
                     avatar=encoded_avatar,
+                    friends='[]',
                     sids='[]'
                 )
 

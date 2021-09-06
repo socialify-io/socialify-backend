@@ -8,6 +8,7 @@ conn.execute('''CREATE TABLE users
         username TEXT NOT NULL,
         password TEXT NOT NULL,
         avatar TEXT NOT NULL,
+        friends TEXT NOT NULL,
         sids TEXT NOT NULL
      )''')
 
