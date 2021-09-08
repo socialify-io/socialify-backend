@@ -55,11 +55,11 @@ async def send_friend_request():
 
         if verify_sign(request, pub_key, 'sendFriendRequest'):
             body = request.get_json(force=True)
-            friends = json.loads(user_session.query(User.friends).filter(User.id == userId).one()[0])
-            friends.append(body['userId'])
-            friends = json.dumps(friends)
+            requests = json.loads(user_session.query(User.pendingFriendsRequests).filter(User.id == userId).one()[0])
+            requests.append(body['userId'])
+            requests = json.dumps(friends)
             user_session.query(User).filter(User.id ==
-                    userId).update({'friends': friends})
+                    userId).update({'pendingFriendsRequests': requests})
 
             return jsonify(Response(data={}).__dict__)
 
@@ -71,3 +71,65 @@ async def send_friend_request():
 
             return jsonify(ErrorResponse(
                 errors=[error]).__dict__)
+    else:
+        error = ApiError(
+            code = Error().InvalidAuthToken,
+            reason = 'Your authorization token is not valid.'
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+                    errors = [error]).__dict__)
+
+
+@app.route(f'{route}/fetchPendingFriendsRequests', methods=HTTP_METHODS)
+async def fetch_pending_friends_requests():
+    if reqest.method != 'POST':
+        return render_template('what_are_your_looking_for.html')
+    try:
+        headers = get_headers(request, with_fingerprint)
+
+    except:
+        error = ApiError(
+            code=Error().InvalidHeaders,
+            reason='Some required headers not found.'
+         ).__dict__
+
+        return jsonify(ErrorResponse(errors=[error]).__dict__)
+
+    if verify_authtoken(headers, 'fetchPendingFriendsRequests'):
+        try:
+            userId = user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()
+            userId = int(userId[0])
+
+        except:
+            error = ApiError(
+                code=Error().InvalidDeviceId,
+                reason='Device id is not valid. Device may be deleted.'
+            ).__dict__
+
+            return jsonify(ErrorResponse(
+                errors=[error]).__dict__)
+
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == headers["Fingerprint"]).one()
+
+        if verify_sign(request, pub_key, 'fetchPendingFriendsRequests'):
+            requests = json.loads(user_session.query(User.pendingFrendsRequests).filter(User.id == userId).one()[0])
+
+            return jsonify(Response(data={requests}).__dict__)
+
+        else:
+            error = ApiError(
+                code=Error.InvalidSignature,
+                reason='Invalid signature.'
+            ).__dict__
+
+            return jsonify(ErrorResponse(
+                errors=[error]).__dict__)
+    else:
+        error = ApiError(
+            code = Error().InvalidAuthToken,
+            reason = 'Your authorization token is not valid.'
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+                    errors = [error]).__dict__)
