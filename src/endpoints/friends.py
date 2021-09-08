@@ -83,7 +83,7 @@ async def send_friend_request():
 
 @app.route(f'{route}/fetchPendingFriendsRequests', methods=HTTP_METHODS)
 async def fetch_pending_friends_requests():
-    if reqest.method != 'POST':
+    if request.method != 'POST':
         return render_template('what_are_your_looking_for.html')
     try:
         headers = get_headers(request, with_fingerprint)
