@@ -57,7 +57,7 @@ async def send_friend_request():
             body = request.get_json(force=True)
             requests = json.loads(user_session.query(User.pendingFriendsRequests).filter(User.id == userId).one()[0])
             requests.append(body['userId'])
-            requests = json.dumps(friends)
+            requests = json.dumps(requests)
             user_session.query(User).filter(User.id ==
                     userId).update({'pendingFriendsRequests': requests})
 
