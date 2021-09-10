@@ -8,7 +8,6 @@ conn.execute('''CREATE TABLE users
         username TEXT NOT NULL,
         password TEXT NOT NULL,
         avatar TEXT NOT NULL,
-        pendingFriendsRequests TEXT NOT NULL,
         sids TEXT NOT NULL
      )''')
 
@@ -28,6 +27,19 @@ conn.execute('''CREATE TABLE devices
         status INTEGER NOT NULL,
 
         FOREIGN KEY (userId) REFERENCES users (id)
-     )''')
+    )''')
+
+conn.execute('''CREATE TABLE friend_requests
+    (
+        id INTEGER PRIMARY KEY ASC,
+        receiverId INTEGER NOT NULL,
+        requesterId INTEGER NOT NULL,
+        requesterUsername TEXT NOT NULL,
+        requestDate TIMESTAMP NOT NULL,
+
+        FOREIGN KEY (receiverId) REFERENCES users (id),
+        FOREIGN KEY (requesterId) REFERENCES users (id),
+        FOREIGN KEY (requesterUsername) REFERENCES users (id)
+    )''')
 
 conn.close()

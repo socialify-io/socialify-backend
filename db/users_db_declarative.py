@@ -16,11 +16,14 @@ class User(UserBase):
     username = Column(TEXT, nullable=False)
     password = Column(TEXT, nullable=False)
     avatar = Column(TEXT, nullable=False)
-    pendingFriendsRequests = Column(TEXT, nullable=False)
     sids = Column(TEXT, nullable=False)
 
     # relationships
-    devices = relationship('Device', backref='Device.userId', primaryjoin='User.id==Device.userId', lazy='dynamic')
+    devices = relationship('Device', backref='Device.userId', primaryjoin='User.id == Device.userId', lazy='dynamic')
+    pendingFriendsRequests = relationship('FriendRequest',
+                                          backref='FriendRequest.receiverId',
+                                          primaryjoin='User.id == FriendRequest.receiverId',
+                                          lazy='dynamic')
 
 
 class Device(UserBase):
@@ -39,6 +42,15 @@ class Device(UserBase):
     messageToken = Column(VARCHAR(46), nullable=True)
     status = Column(INTEGER, nullable=False)
 
+
+class FriendRequest(UserBase):
+    __tablename__ = 'friend_requests'
+
+    id = Column(INTEGER, primary_key=True)
+    receiverId = Column(INTEGER, ForeignKey(User.id), autoincrement=True)
+    requesterId = Column(INTEGER, ForeignKey(User.id), autoincrement=True)
+    requesterUsername = Column(TEXT, ForeignKey(User.username), autoincrement=True)
+    requestDate = Column(TIMESTAMP, nullable=False)
 
 engine = create_engine('sqlite:///db/users.db')
 
