@@ -63,3 +63,48 @@ def test_new_device(client):
 
     assert resp.status_code == 200
     assert json_resp['success'] == True
+
+def test_new_device_2(client):
+    key = get_key(client)
+    password = 'test_pass123'
+
+    pub_key = RSA.importKey(key)
+    enc_pass = encrypt_rsa(password, pub_key)
+
+    headers = get_headers("newDevice")
+
+    keys = generate_keys()
+    priv_key = keys.exportKey().decode('utf-8')
+    pub_key = keys.publickey().exportKey().decode('utf-8')
+
+    payload = {
+        'username': 'TestAccountSecondary',
+        'password': enc_pass.decode('utf8'),
+        'pubKey': key,
+        'device': {
+            'deviceName': 'Unit test',
+            'signPubKey': pub_key,
+            'fingerprint': hashlib.sha1(bytes(priv_key, 'utf-8')).hexdigest()
+        }
+    }
+
+    resp = client.post(
+        f'{route}/newDevice',
+        headers=headers,
+        json=payload
+    )
+
+    json_resp = json.loads(resp.data.decode('utf8'))
+    print(json_resp)
+
+    f = open("tests/key2.pem", "w")
+    f.write(str(priv_key))
+    f.close()
+
+    f = open("tests/id2.txt", "w")
+    f.write(str(json_resp['data']['deviceId']))
+    f.close()
+
+    assert resp.status_code == 200
+    assert json_resp['success'] == True
+

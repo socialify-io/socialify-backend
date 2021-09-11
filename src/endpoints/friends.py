@@ -123,10 +123,16 @@ async def fetch_pending_friends_requests():
         pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.fingerprint == headers["Fingerprint"]).one()
 
         if verify_sign(request, pub_key, 'fetchPendingFriendsRequests'):
-            requests = user_session.query(FriendRequest).filter(FriendRequest.receiverId == user_id).all()
-            print(requests)
+            requests = list(user_session.query(FriendRequest).filter(FriendRequest.receiverId == user_id).all())
+            for index, friend_request in enumerate(requests):
+                requests[index] = {
+                    'receiverId': friend_request.receiverId,
+                    'requesterId': friend_request.requesterId,
+                    'requesterUsername': friend_request.requesterUsername,
+                    'requestDate': friend_request.requestDate
+                }
 
-            return jsonify(Response(data={requests}).__dict__)
+            return jsonify(Response(data=requests).__dict__)
 
         else:
             error = ApiError(

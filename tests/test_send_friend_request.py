@@ -74,3 +74,54 @@ def test_send_friend_request(client):
 
     assert resp.status_code == 200
     assert json_resp['success'] == True
+
+def test_fetch_pending_friends_requests(client):
+    with open("tests/key2.pem", "r") as f:
+        priv_key_string = f.read()
+
+    with open("tests/id2.txt", "r") as f:
+        id = f.read()
+
+    priv_key = RSA.importKey(priv_key_string)
+
+    headers = get_headers("fetchPendingFriendsRequests")
+
+    headers.update({
+        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
+        'DeviceId': id})
+
+    mapped_headers = ""
+    mapped_signature_json = ""
+
+    for value in headers:
+        mapped_headers += f'{value}={headers[value]}' + '&'
+
+    signature_json = {
+        'headers': mapped_headers,
+        'body': '{}',
+        'timestamp': str(headers['Timestamp']),
+        'authToken': str(headers['AuthToken']),
+        'endpointUrl': f'{route}/fetchPendingFriendsRequests'
+    }
+
+    for value in signature_json:
+        mapped_signature_json += f'{value}={signature_json[value]}' + '&'
+
+    digest = SHA.new(bytes(mapped_signature_json, 'utf-8'))
+    signer = PKCS1_v1_5.new(priv_key)
+    signature = base64.b64encode(signer.sign(digest))
+    headers.update({'Signature': signature})
+
+    resp = client.post(
+        f'{route}/fetchPendingFriendsRequests',
+        headers=headers,
+        json={}
+    )
+
+    json_resp = json.loads(resp.data.decode('utf8'))
+
+    print(json_resp)
+
+    assert resp.status_code == 200
+    assert json_resp['success'] == True
+

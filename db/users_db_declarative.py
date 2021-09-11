@@ -8,7 +8,6 @@ from sqlalchemy.sql.sqltypes import BOOLEAN, TEXT, VARCHAR, TIMESTAMP, INTEGER
 
 UserBase = declarative_base()
 
-
 class User(UserBase):
     __tablename__ = 'users'
 
