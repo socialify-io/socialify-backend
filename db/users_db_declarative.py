@@ -18,18 +18,30 @@ class User(UserBase):
     sids = Column(TEXT, nullable=False)
 
     # relationships
-    devices = relationship('Device', backref='Device.userId', primaryjoin='User.id == Device.userId', lazy='dynamic')
+    devices = relationship('Device',
+                           backref='Device.userId',
+                           primaryjoin='User.id == Device.userId',
+                           lazy='dynamic')
     pendingFriendsRequests = relationship('FriendRequest',
                                           backref='FriendRequest.receiverId',
                                           primaryjoin='User.id == FriendRequest.receiverId',
                                           lazy='dynamic')
+    inviter = relationship('Friendship',
+                           backref='Friendship.inviter',
+                           primaryjoin='User.id == Friendship.inviter',
+                           lazy='dynamic')
+    invited = relationship('Friendship',
+                           backref='Friendship.invited',
+                           primaryjoin='User.id == Friendship.invited',
+                           lazy='dynamic')
+
 
 
 class Device(UserBase):
     __tablename__ = 'devices'
 
-    id = Column(INTEGER, primary_key=True)
-    userId = Column(INTEGER, ForeignKey(User.id), autoincrement=True)
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    userId = Column(INTEGER, ForeignKey(User.id), nullable=False)
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
     pubKey = Column(TEXT, nullable=False)
@@ -45,11 +57,19 @@ class Device(UserBase):
 class FriendRequest(UserBase):
     __tablename__ = 'friend_requests'
 
-    id = Column(INTEGER, primary_key=True)
-    receiverId = Column(INTEGER, ForeignKey(User.id), autoincrement=True)
-    requesterId = Column(INTEGER, ForeignKey(User.id), autoincrement=True)
-    requesterUsername = Column(TEXT, ForeignKey(User.username), autoincrement=True)
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    receiverId = Column(INTEGER, ForeignKey(User.id), nullable=False)
+    requesterId = Column(INTEGER, ForeignKey(User.id), nullable=False)
+    requesterUsername = Column(TEXT, ForeignKey(User.username), nullable=False)
     requestDate = Column(TIMESTAMP, nullable=False)
+
+class Friendship(UserBase):
+    __tablename__ = 'friendships'
+
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    inviter = Column(INTEGER, ForeignKey(User.id), nullable=False)
+    invited = Column(INTEGER, ForeignKey(User.id), nullable=False)
+
 
 engine = create_engine('sqlite:///db/users.db')
 

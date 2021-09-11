@@ -42,4 +42,14 @@ conn.execute('''CREATE TABLE friend_requests
         FOREIGN KEY (requesterUsername) REFERENCES users (id)
     )''')
 
+conn.execute('''CREATE TABLE friendships
+    (
+        id INTEGER PRIMARY KEY ASC,
+        inviter INTEGER NOT NULL,
+        invited INTEGER NOT NULL,
+
+        FOREIGN KEY (inviter) REFERENCES users (id),
+        FOREIGN KEY (invited) REFERENCES users (id)
+    )''')
+
 conn.close()

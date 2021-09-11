@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, jsonify
 import json
 
 # Database
-from db.users_db_declarative import Device, User, FriendRequest
+from db.users_db_declarative import Device, User, FriendRequest, Friendship
 
 # Helpers
 from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
@@ -126,6 +126,7 @@ async def fetch_pending_friends_requests():
             requests = list(user_session.query(FriendRequest).filter(FriendRequest.receiverId == user_id).all())
             for index, friend_request in enumerate(requests):
                 requests[index] = {
+                    'id': friend_request.id,
                     'receiverId': friend_request.receiverId,
                     'requesterId': friend_request.requesterId,
                     'requesterUsername': friend_request.requesterUsername,
@@ -133,6 +134,70 @@ async def fetch_pending_friends_requests():
                 }
 
             return jsonify(Response(data=requests).__dict__)
+
+        else:
+            error = ApiError(
+                code=Error.InvalidSignature,
+                reason='Invalid signature.'
+            ).__dict__
+
+            return jsonify(ErrorResponse(
+                errors=[error]).__dict__)
+    else:
+        error = ApiError(
+            code = Error().InvalidAuthToken,
+            reason = 'Your authorization token is not valid.'
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+                    errors = [error]).__dict__)
+
+@app.route(f'{route}/acceptFriendRequest', methods=HTTP_METHODS)
+async def accept_friend_request():
+    if request.method != 'POST':
+        return render_template('what_are_your_looking_for.html')
+    try:
+        headers = get_headers(request, with_fingerprint)
+
+    except:
+        error = ApiError(
+            code=Error().InvalidHeaders,
+            reason='Some required headers not found.'
+         ).__dict__
+
+        return jsonify(ErrorResponse(errors=[error]).__dict__)
+
+    if verify_authtoken(headers, 'acceptFriendRequest'):
+        try:
+            user_id = int(user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()[0])
+
+        except:
+            error = ApiError(
+                code=Error().InvalidDeviceId,
+                reason='Device id is not valid. Device may be deleted.'
+            ).__dict__
+
+            return jsonify(ErrorResponse(
+                errors=[error]).__dict__)
+
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.fingerprint == headers["Fingerprint"]).one()
+
+        if verify_sign(request, pub_key, 'acceptFriendRequest'):
+            body = request.get_json()
+            requestId = body['requestId']
+            inviter = user_session.query(FriendRequest.requesterId).filter(FriendRequest.id == requestId).one()[0]
+            invited = user_session.query(FriendRequest.receiverId).filter(FriendRequest.id == requestId).one()[0]
+
+            new_friendship = Friendship(
+                inviter=inviter,
+                invited=invited
+            )
+
+            user_session.add(new_friendship)
+            user_session.query(FriendRequest).filter(FriendRequest.id == requestId).delete()
+            user_session.commit()
+
+            return jsonify(Response(data={}).__dict__)
 
         else:
             error = ApiError(
