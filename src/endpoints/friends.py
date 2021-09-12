@@ -261,8 +261,65 @@ async def fetch_friends():
                     'avatar': user_session.query(User.avatar).filter(User.id == id).one()[0]
                 })
 
-
             return jsonify(Response(data=friendships).__dict__)
+
+        else:
+            error = ApiError(
+                code=Error.InvalidSignature,
+                reason='Invalid signature.'
+            ).__dict__
+
+            return jsonify(ErrorResponse(
+                errors=[error]).__dict__)
+    else:
+        error = ApiError(
+            code = Error().InvalidAuthToken,
+            reason = 'Your authorization token is not valid.'
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+                    errors = [error]).__dict__)
+
+@app.route(f'{route}/removeFriend', methods=HTTP_METHODS)
+async def remove_friend():
+    if request.method != 'POST':
+        return render_template('what_are_your_looking_for.html')
+    try:
+        headers = get_headers(request, with_fingerprint)
+
+    except:
+        error = ApiError(
+            code=Error().InvalidHeaders,
+            reason='Some required headers not found.'
+         ).__dict__
+
+        return jsonify(ErrorResponse(errors=[error]).__dict__)
+
+    if verify_authtoken(headers, 'removeFriend'):
+        try:
+            user_id = int(user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()[0])
+
+        except:
+            error = ApiError(
+                code=Error().InvalidDeviceId,
+                reason='Device id is not valid. Device may be deleted.'
+            ).__dict__
+
+            return jsonify(ErrorResponse(
+                errors=[error]).__dict__)
+
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.fingerprint == headers["Fingerprint"]).one()
+
+        if verify_sign(request, pub_key, 'removeFriend'):
+            body = request.get_json()
+            delete_user_id = body['userId']
+
+            user_session.query(Friendship).filter(Friendship.inviter == user_id,
+                                                  Friendship.invited == delete_user_id).delete()
+            user_session.query(Friendship).filter(Friendship.inviter == delete_user_id,
+                                                  Friendship.invited == user_id).delete()
+
+            return jsonify(Response(data={}).__dict__)
 
         else:
             error = ApiError(

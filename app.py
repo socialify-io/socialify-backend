@@ -74,7 +74,7 @@ def add_header(response):
 
 # Endpoints
 from src.endpoints import get_information_about_account#, get_information_about_account_http
-from src.endpoints.friends import send_friend_request, fetch_pending_friends_requests, accept_friend_request, fetch_friends
+from src.endpoints.friends import send_friend_request, fetch_pending_friends_requests, accept_friend_request, fetch_friends, remove_friend
 from src.endpoints.account import get_key, register, get_devices, upload_avatar
 from src.endpoints.account import new_device
 from src.endpoints.account import remove_device
