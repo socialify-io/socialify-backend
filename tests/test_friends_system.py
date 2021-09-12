@@ -185,45 +185,11 @@ def test_accept_friend_request(client):
     assert json_resp['success'] == True
 
 def test_fetch_friends(client):
-    with open("tests/key.pem", "r") as f:
-        priv_key_string = f.read()
-
-    with open("tests/id.txt", "r") as f:
-        id = f.read()
-
-    priv_key = RSA.importKey(priv_key_string)
-
     headers = get_headers("fetchFriends")
-
-    headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
-        'DeviceId': id})
-
-    mapped_headers = ""
-    mapped_signature_json = ""
-
-    for value in headers:
-        mapped_headers += f'{value}={headers[value]}' + '&'
 
     payload = {
         'userId': 2
     }
-
-    signature_json = {
-        'headers': mapped_headers,
-        'body': f'{payload}',
-        'timestamp': str(headers['Timestamp']),
-        'authToken': str(headers['AuthToken']),
-        'endpointUrl': f'{route}/fetchFriends'
-    }
-
-    for value in signature_json:
-        mapped_signature_json += f'{value}={signature_json[value]}' + '&'
-
-    digest = SHA.new(bytes(mapped_signature_json, 'utf-8'))
-    signer = PKCS1_v1_5.new(priv_key)
-    signature = base64.b64encode(signer.sign(digest))
-    headers.update({'Signature': signature})
 
     resp = client.post(
         f'{route}/fetchFriends',

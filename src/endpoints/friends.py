@@ -221,7 +221,7 @@ async def fetch_friends():
     if request.method != 'POST':
         return render_template('what_are_your_looking_for.html')
     try:
-        headers = get_headers(request, with_fingerprint)
+        headers = get_headers(request, without_fingerprint)
 
     except:
         error = ApiError(
@@ -232,45 +232,22 @@ async def fetch_friends():
         return jsonify(ErrorResponse(errors=[error]).__dict__)
 
     if verify_authtoken(headers, 'fetchFriends'):
-        try:
-            user_id = int(user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()[0])
+        body = request.get_json()
+        user_id = body['userId']
 
-        except:
-            error = ApiError(
-                code=Error().InvalidDeviceId,
-                reason='Device id is not valid. Device may be deleted.'
-            ).__dict__
+        friendships_ids = [id[0] for id in user_session.query(Friendship.invited).filter(Friendship.inviter == user_id)]
+        friendships_ids += [id[0] for id in user_session.query(Friendship.inviter).filter(Friendship.invited == user_id)]
+        friendships = []
 
-            return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+        for id in friendships_ids:
+            friendships.append({
+                'id': id,
+                'username': user_session.query(User.username).filter(User.id == id).one()[0],
+                'avatar': user_session.query(User.avatar).filter(User.id == id).one()[0]
+            })
 
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.fingerprint == headers["Fingerprint"]).one()
+        return jsonify(Response(data=friendships).__dict__)
 
-        if verify_sign(request, pub_key, 'fetchFriends'):
-            body = request.get_json()
-            user_id = body['userId']
-
-            friendships_ids = [id[0] for id in user_session.query(Friendship.invited).filter(Friendship.inviter == user_id)]
-            friendships_ids += [id[0] for id in user_session.query(Friendship.inviter).filter(Friendship.invited == user_id)]
-            friendships = []
-
-            for id in friendships_ids:
-                friendships.append({
-                    'id': id,
-                    'username': user_session.query(User.username).filter(User.id == id).one()[0],
-                    'avatar': user_session.query(User.avatar).filter(User.id == id).one()[0]
-                })
-
-            return jsonify(Response(data=friendships).__dict__)
-
-        else:
-            error = ApiError(
-                code=Error.InvalidSignature,
-                reason='Invalid signature.'
-            ).__dict__
-
-            return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
     else:
         error = ApiError(
             code = Error().InvalidAuthToken,

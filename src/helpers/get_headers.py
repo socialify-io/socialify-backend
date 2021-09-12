@@ -1,7 +1,7 @@
 with_fingerprint = True
 without_fingerprint = False
 
-def get_headers(request, with_fingerprint):
+def get_headers(request, is_with_fingerprint):
     headers = {
         'Content-Type': request.headers['Content-Type'],
         'User-Agent': request.headers['User-Agent'],
@@ -11,7 +11,7 @@ def get_headers(request, with_fingerprint):
         'AuthToken': request.headers['AuthToken'],
     }
 
-    if with_fingerprint:
+    if is_with_fingerprint:
         headers.update({'Fingerprint': request.headers['Fingerprint'],
                         'DeviceId': request.headers['DeviceId']})
 
