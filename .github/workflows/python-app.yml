@@ -43,3 +43,4 @@ jobs:
         pytest tests/test_get_devices.py
         pytest tests/test_remove_device.py
         pytest tests/test_report_error.py
+        pytest tests/test_delete_account.py
