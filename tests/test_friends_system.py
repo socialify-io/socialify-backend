@@ -204,6 +204,27 @@ def test_fetch_friends(client):
     assert resp.status_code == 200
     assert json_resp['success'] == True
 
+
+def test_get_mutual_friends(client):
+    headers = get_headers("getMutualFriends")
+
+    payload = {
+        'users': [1, 2]
+    }
+
+    resp = client.post(
+        f'{route}/getMutualFriends',
+        headers=headers,
+        json=payload
+    )
+
+    json_resp = json.loads(resp.data.decode('utf8'))
+
+    print(json_resp)
+
+    assert resp.status_code == 200
+    assert json_resp['success'] == False
+
 def test_remove_friend(client):
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()

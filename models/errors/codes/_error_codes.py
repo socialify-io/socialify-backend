@@ -21,3 +21,6 @@ class Error(object):
     InvalidDeviceId = 11
     InvalidSignature = 12
     InvalidRequestPayload = 13
+
+    # Friends
+    InvalidNumberOfUsers = 14

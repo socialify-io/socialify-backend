@@ -315,3 +315,59 @@ async def remove_friend():
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
 
+@app.route(f'{route}/getMutualFriends', methods=HTTP_METHODS)
+async def get_mutual_friends():
+    if request.method != 'POST':
+        return render_template('what_are_your_looking_for.html')
+    try:
+        headers = get_headers(request, without_fingerprint)
+
+    except:
+        error = ApiError(
+            code=Error().InvalidHeaders,
+            reason='Some required headers not found.'
+         ).__dict__
+
+        return jsonify(ErrorResponse(errors=[error]).__dict__)
+
+    if verify_authtoken(headers, 'getMutualFriends'):
+        body = request.get_json()
+        users = body['users']
+
+        if len(users) != 1:
+            error = ApiError(
+                code=Error().InvalidNumberOfUsers,
+                reason='Invalid of users in array is invalid. Please insert into table only 2 users.'
+            ).__dict__
+
+        friends = {}
+        mutual_friends = []
+
+        for user in users:
+            user_object = user_session.query(User).filter(User.id == user).one()
+            user_json = {
+                'id': user_object.id,
+                'username': user_object.username,
+               # 'avatar': str(user_object.avatar)
+            }
+
+            friends_for_user = {id[0] for id in user_session.query(Friendship.invited).filter(Friendship.inviter == user)}
+            friends_for_user.update({id[0] for id in user_session.query(Friendship.inviter).filter(Friendship.invited == user)})
+            friends.update({user: friends_for_user})
+
+        mutual_friends.append(friends[users[0]].intersection(friends[users[1]]))
+
+
+        print(mutual_friends)
+
+        return jsonify(Response(data={}).__dict__)
+
+    else:
+        error = ApiError(
+            code = Error().InvalidAuthToken,
+            reason = 'Your authorization token is not valid.'
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+                    errors = [error]).__dict__)
+
