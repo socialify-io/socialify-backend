@@ -243,7 +243,7 @@ async def fetch_friends():
             friendships.append({
                 'id': id,
                 'username': user_session.query(User.username).filter(User.id == id).one()[0],
-                'avatar': user_session.query(User.avatar).filter(User.id == id).one()[0]
+                'avatar': str(user_session.query(User.avatar).filter(User.id == id).one()[0])
             })
 
         return jsonify(Response(data=friendships).__dict__)
@@ -355,7 +355,7 @@ async def get_mutual_friends():
             friends_for_user.update({id[0] for id in user_session.query(Friendship.inviter).filter(Friendship.invited == user)})
             friends.update({user: friends_for_user})
 
-        mutual_friends.append(friends[users[0]].intersection(friends[users[1]]))
+        mutual_friends.append(friends[users[1]].intersection(friends[users[2]]))
 
 
         print(mutual_friends)
