@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.sql.expression import null
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import BOOLEAN, TEXT, VARCHAR, TIMESTAMP, INTEGER
+from sqlalchemy.sql.sqltypes import BOOLEAN, TEXT, VARCHAR, TIMESTAMP, INTEGER, DATE
 
 UserBase = declarative_base()
 
@@ -19,23 +19,34 @@ class User(UserBase):
 
     # relationships
     devices = relationship('Device',
-                           backref='Device.userId',
-                           primaryjoin='User.id == Device.userId',
-                           lazy='dynamic')
+                        backref='Device.userId',
+                        primaryjoin='User.id == Device.userId',
+                        lazy='dynamic')
+
     pendingFriendsRequests = relationship('FriendRequest',
-                                          backref='FriendRequest.receiverId',
-                                          primaryjoin='User.id == FriendRequest.receiverId',
-                                          lazy='dynamic')
+                        backref='FriendRequest.receiverId',
+                        primaryjoin='User.id == FriendRequest.receiverId',
+                        lazy='dynamic')
+
     inviter = relationship('Friendship',
-                           backref='Friendship.inviter',
-                           primaryjoin='User.id == Friendship.inviter',
-                           lazy='dynamic')
+                        backref='Friendship.inviter',
+                        primaryjoin='User.id == Friendship.inviter',
+                        lazy='dynamic')
+
     invited = relationship('Friendship',
-                           backref='Friendship.invited',
-                           primaryjoin='User.id == Friendship.invited',
-                           lazy='dynamic')
+                        backref='Friendship.invited',
+                        primaryjoin='User.id == Friendship.invited',
+                        lazy='dynamic')
 
+    sender = relationship('DM',
+                        backref='DM.sender',
+                        primaryjoin='User.id == DM.sender',
+                        lazy='dynamic')
 
+    receiver = relationship('DM',
+                        backref='DM.receiver',
+                        primaryjoin='User.id == DM.receiver',
+                        lazy='dynamic')
 
 class Device(UserBase):
     __tablename__ = 'devices'
@@ -53,7 +64,6 @@ class Device(UserBase):
     messageToken = Column(VARCHAR(46), nullable=True)
     status = Column(INTEGER, nullable=False)
 
-
 class FriendRequest(UserBase):
     __tablename__ = 'friend_requests'
 
@@ -69,6 +79,15 @@ class Friendship(UserBase):
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     inviter = Column(INTEGER, ForeignKey(User.id), nullable=False)
     invited = Column(INTEGER, ForeignKey(User.id), nullable=False)
+
+class DM(UserBase):
+    __tablename__ = 'dms'
+
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    message = Column(TEXT, nullable=False)
+    sender = Column(INTEGER, ForeignKey(User.id), nullable=False)
+    receiver = Column(INTEGER, ForeignKey(User.id), nullable=False)
+    date = Column(TIMESTAMP, nullable=False)
 
 
 engine = create_engine('sqlite:///db/users.db')

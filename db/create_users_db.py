@@ -52,4 +52,16 @@ conn.execute('''CREATE TABLE friendships
         FOREIGN KEY (invited) REFERENCES users (id)
     )''')
 
+conn.execute('''CREATE TABLE dms
+    (
+        id INTEGER PRIMARY KEY ASC,
+        message TEXT NOT NULL,
+        sender INTEGER NOT NULL,
+        receiver INTEGER NOT NULL,
+        date TIMESTAMP NOT NULL,
+
+        FOREIGN KEY (sender) REFERENCES users (id),
+        FOREIGN KEY (receiver) REFERENCES users (id)
+    )''')
+
 conn.close()
