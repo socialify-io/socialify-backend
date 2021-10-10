@@ -26,11 +26,11 @@ def get_information_about_account(id):
 
     response = {
         "username": str(user.username),
-        "avatar": str(user.avatar),
+        "avatar": str(user.avatar.decode()),
         "id": str(user.id)
     }
 
-    emit('get_information_about_account', response)
+    emit('get_information_about_account', response, to=request.sid)
 
 @app.route(f'{route}/getInformationAboutAccount', methods=HTTP_METHODS)
 async def get_information_about_account_http():
