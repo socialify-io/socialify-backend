@@ -77,3 +77,10 @@ def test_send_dm():
 
     assert response['message'] == 'Test message'
     assert response['username'] == 'TestAccount123'
+
+def test_fetch_last_unread_dms():
+    client.emit('fetch_last_unread_dms')
+    response = client.get_received()[0]['args']
+    print(response)
+
+    assert True == False

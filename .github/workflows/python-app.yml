@@ -46,6 +46,7 @@ jobs:
         pytest tests/test_friends_system.py
 
         pytest tests/test_send_message.py
+        pytest tests/test_send_dm.py
 
         pytest tests/test_remove_device.py
         pytest tests/test_report_error.py

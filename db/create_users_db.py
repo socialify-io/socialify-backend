@@ -59,6 +59,7 @@ conn.execute('''CREATE TABLE dms
         sender INTEGER NOT NULL,
         receiver INTEGER NOT NULL,
         date TIMESTAMP NOT NULL,
+        is_read BOOL NOT NULL DEFAULT false,
 
         FOREIGN KEY (sender) REFERENCES users (id),
         FOREIGN KEY (receiver) REFERENCES users (id)

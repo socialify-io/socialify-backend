@@ -27,7 +27,6 @@ from models.errors.codes._error_codes import Error
 
 @socketio.event
 def send_dm(data):
-    print('dm sended')
     headers = get_headers(request, with_fingerprint)
     user_id = user_session.query(Device.userId).filter(Device.fingerprint == headers['Fingerprint']).one()[0]
     username = user_session.query(User.username).filter(User.id ==
@@ -58,4 +57,37 @@ def send_dm(data):
     }
 
     emit('send_dm', emit_model, to=sids)
+
+@socketio.event
+def fetch_last_unread_dms():
+    headers = get_headers(request, with_fingerprint)
+    user_id = user_session.query(Device.userId).filter(Device.fingerprint == headers['Fingerprint']).one()[0]
+
+    dms = user_session.query(DM).filter(DM.receiver == user_id, DM.is_read == False).all()
+    users_with_new_dms = []
+
+    for dm in dms:
+        if dm.sender in users_with_new_dms:
+            pass
+        else:
+            users_with_new_dms.append(dm.sender)
+
+    dms_json = []
+
+    for user in users_with_new_dms:
+        dm = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == user).order_by(DM.id.desc()).first()
+        dm_json = {
+            'sender': dm.sender,
+            'receiver': dm.receiver,
+            'message': dm.message,
+            'date': str(dm.date.replace(tzinfo=pytz.utc)),
+            'isRead': dm.is_read
+        }
+
+        dms_json.append(dm_json)
+
+    print(dms_json)
+
+
+    emit('fetch_dms', 'dupa', to=request.sid)
 

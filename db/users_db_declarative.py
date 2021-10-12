@@ -88,7 +88,7 @@ class DM(UserBase):
     sender = Column(INTEGER, ForeignKey(User.id), nullable=False)
     receiver = Column(INTEGER, ForeignKey(User.id), nullable=False)
     date = Column(TIMESTAMP, nullable=False)
-
+    is_read = Column(BOOLEAN, nullable=False, default=False)
 
 engine = create_engine('sqlite:///db/users.db')
 
