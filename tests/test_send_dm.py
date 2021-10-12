@@ -83,4 +83,4 @@ def test_fetch_last_unread_dms():
     response = client.get_received()[0]['args']
     print(response)
 
-    assert True == False
+    assert response == []
