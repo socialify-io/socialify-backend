@@ -80,7 +80,7 @@ def test_send_dm():
 
 def test_fetch_last_unread_dms():
     client.emit('fetch_last_unread_dms')
-    response = client.get_received()[0]['args']
+    response = client.get_received()[0]['args'][0]
     print(response)
 
     assert response == []

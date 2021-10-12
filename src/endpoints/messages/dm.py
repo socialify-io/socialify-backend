@@ -86,8 +86,5 @@ def fetch_last_unread_dms():
 
         dms_json.append(dm_json)
 
-    print(dms_json)
-
-
-    emit('fetch_dms', 'dupa', to=request.sid)
+    emit('fetch_dms', dms_json, to=request.sid)
 
