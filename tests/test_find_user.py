@@ -14,7 +14,6 @@ from Crypto.Hash import SHA
 from Crypto.Signature import PKCS1_v1_5
 import hashlib
 
-message_token = ''
 client = ''
 
 def test_connect():
@@ -59,13 +58,9 @@ def test_connect():
     global client
     client = socketio.test_client(app, headers=headers)
 
-    global message_token
-    message_token = client.get_received()[0]['args'][0]['data']['messageToken']
-
     assert client.is_connected()
 
 def test_find_user():
     client.emit('find_user', 'TestAcco')
-
     assert client.get_received()[0]['args'][0][0]['username'] == 'TestAccountSecondary'
 
