@@ -13,6 +13,11 @@ from ...helpers.RSA_helper import verify_sign
 # Crypto
 import base64
 
+# Images
+from PIL import Image
+from io import BytesIO
+import os
+
 # Models
 from models.errors._api_error import ApiError
 
@@ -39,8 +44,8 @@ async def upload_avatar():
 
     if verify_authtoken(headers, 'uploadAvatar'):
         try:
-            userId = user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()
-            userId = int(userId[0])
+            user_id = user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()
+            user_id = int(user_id[0])
 
         except:
             error = ApiError(
@@ -51,17 +56,17 @@ async def upload_avatar():
             return jsonify(ErrorResponse(
                 errors=[error]).__dict__)
 
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.fingerprint == headers["Fingerprint"]).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.fingerprint == headers["Fingerprint"]).one()
 
         if verify_sign(request, pub_key, 'uploadAvatar'):
             body = request.get_json(force=True)
             avatar = body['avatar']
 
-            user_session.query(User).filter(User.id == userId).update({'avatar': avatar})
-            user_session.commit()
+            image = Image.open(BytesIO(base64.b64decode(avatar)))
+            image.save(f'{os.path.join(app.config["AVATARS_FOLDER"])}{user_id}.png', save_all = True)
 
             return jsonify(Response(data={}).__dict__)
-            
+
         else:
             error = ApiError(
                 code=Error.InvalidSignature,
