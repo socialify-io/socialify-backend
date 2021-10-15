@@ -12,6 +12,7 @@ from db.users_db_declarative import Device, User, DM
 from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
 from ...helpers.verify_authtoken import verify_authtoken
 from ...helpers.RSA_helper import verify_sign
+from ...helpers.get_user_id import get_user_id
 
 # Datatime
 from datetime import datetime
@@ -28,7 +29,7 @@ from models.errors.codes._error_codes import Error
 @socketio.event
 def send_dm(data):
     headers = get_headers(request, with_fingerprint)
-    user_id = user_session.query(Device.userId).filter(Device.fingerprint == headers['Fingerprint']).one()[0]
+    user_id = get_user_id(request)
     username = user_session.query(User.username).filter(User.id ==
             user_id).one()[0]
 
@@ -60,9 +61,7 @@ def send_dm(data):
 
 @socketio.event
 def fetch_last_unread_dms():
-    headers = get_headers(request, with_fingerprint)
-    user_id = user_session.query(Device.userId).filter(Device.fingerprint == headers['Fingerprint']).one()[0]
-
+    user_id = get_user_id(request)
     dms = user_session.query(DM).filter(DM.receiver == user_id, DM.is_read == False).all()
     users_with_new_dms = []
 
@@ -86,5 +85,31 @@ def fetch_last_unread_dms():
 
         dms_json.append(dm_json)
 
-    emit('fetch_dms', dms_json, to=request.sid)
+    emit('fetch_last_unread_dms', dms_json, to=request.sid)
 
+@socketio.event
+def fetch_dms(data):
+    user_id = get_user_id(request)
+
+    sender = data.pop('sender')
+    from_id = data.pop('from')
+    messages_range = data.pop('range')
+
+    messages = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == sender, DM.id.between(1, from_id)).order_by(DM.id.desc()).limit(messages_range)
+    messages_json = []
+
+    for message in messages:
+        message_json = {
+            'id': message.id,
+            'sender': message.sender,
+            'receiver': message.receiver,
+            'message': message.message,
+            'date': str(message.date.replace(tzinfo=pytz.utc)),
+            'isRead': message.is_read
+        }
+
+        messages_json.append(message_json)
+
+    messages_json.sort(key= lambda i: i['id'])
+
+    emit('fetch_dms', messages_json, to=request.sid)

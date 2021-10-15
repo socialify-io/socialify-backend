@@ -126,3 +126,25 @@ def test_fetch_last_unread_dms():
     assert response['sender'] == 1
     assert response['receiver'] == 2
     assert response['message'] == 'Test message'
+
+def test_fetch_dms():
+    for i in range(20):
+        client2.emit('send_dm', {
+            'receiverId': 1,
+            'message': 'Test message'
+        })
+
+    client.emit('fetch_dms', {
+        'sender': 2,
+        'from': 20,
+        'range': 10
+    })
+
+    response = client.get_received()[20]['args'][0]
+    print(response)
+
+    i = 11
+    for message in response:
+        assert message['id'] == i
+        assert message['message'] == 'Test message'
+        i=i+1
