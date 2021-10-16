@@ -104,7 +104,7 @@ async def register():
                 user_session.flush()
 
                 f = Image.open(BytesIO(app.static_folder+ '/images/socialify-logo.png'))
-                f.save(f'{os.path.join(app.config["AVATARS_FOLDER"]{new_user.id}.png'))
+                f.save(f'{os.path.join(app.config["AVATARS_FOLDER"])}{new_user.id}.png')
 
                 user_session.commit()
 
