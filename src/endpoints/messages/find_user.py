@@ -45,6 +45,6 @@ def find_user(phrase):
 
 def find_users_in_database(phrase):
     search = "%{}%".format(phrase)
-    results = user_session.query(User.id, User.username, User.avatar).filter(User.username.like(search)).all()
+    results = user_session.query(User.id, User.username).filter(User.username.like(search)).all()
     return results
 
