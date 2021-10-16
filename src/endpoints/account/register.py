@@ -17,7 +17,6 @@ import base64
 
 # Images
 from PIL import Image
-from io import BytesIO
 import os
 
 # Models
@@ -103,7 +102,7 @@ async def register():
                 user_session.add(new_user)
                 user_session.flush()
 
-                f = Image.open(BytesIO(app.static_folder+ '/images/socialify-logo.png'))
+                f = Image.open(app.static_folder+ '/images/socialify-logo.png')
                 f.save(f'{os.path.join(app.config["AVATARS_FOLDER"])}{new_user.id}.png')
 
                 user_session.commit()
