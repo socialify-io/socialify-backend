@@ -84,7 +84,7 @@ async def upload_avatar():
         return jsonify(ErrorResponse(
                     errors = [error]).__dict__)
 
-@app.route(f'{route}/getAvatar/<user_id>', methods='GET')
+@app.route(f'{route}/getAvatar/<user_id>', methods=['GET'])
 def get_avatar(user_id):
     return(redirect(url_for('static', filename=f'avatars/{user_id}.png'), code=301))
 
