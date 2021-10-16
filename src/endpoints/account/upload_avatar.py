@@ -1,6 +1,6 @@
 from sqlalchemy.sql.functions import user
 from app import app, HTTP_METHODS, route, key_session, user_session
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 
 # Database
 from db.users_db_declarative import Device, User
@@ -75,3 +75,16 @@ async def upload_avatar():
 
             return jsonify(ErrorResponse(
                 errors=[error]).__dict__)
+    else:
+        error = ApiError(
+            code = Error().InvalidAuthToken,
+            reason = 'Your authorization token is not valid.'
+        ).__dict__
+
+        return jsonify(ErrorResponse(
+                    errors = [error]).__dict__)
+
+@app.route(f'{route}/getAvatar/<user_id>', methods=HTTP_METHODS)
+def get_avatar(user_id):
+    return(redirect(url_for('static', filename=f'avatars/{user_id}.png'), code=301))
+

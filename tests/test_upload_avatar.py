@@ -44,7 +44,7 @@ def test_upload_avatar(client):
     payload = {
         'avatar': base64.b64encode(open(app.static_folder+ '/images/socialify-logo.png', 'rb').read()).decode()
     }
-    
+
     signature_json = {
         'headers': mapped_headers,
         'body': f'{payload}',
@@ -73,3 +73,9 @@ def test_upload_avatar(client):
 
     assert resp.status_code == 200
     assert json_resp['success'] == True
+
+def test_get_avatar(client):
+    resp = client.get(
+    f'{route}/getAvatar/1')
+
+    assert resp.status_code == 301

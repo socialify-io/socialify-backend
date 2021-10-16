@@ -37,8 +37,7 @@ def find_user(phrase):
         if(user[1] != username):
             json_model = {
                 'id': user[0],
-                'username': user[1],
-                'avatar': user[2]
+                'username': user[1]
             }
             response.append(json_model)
 

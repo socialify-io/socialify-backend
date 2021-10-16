@@ -26,7 +26,6 @@ def get_information_about_account(id):
 
     response = {
         "username": str(user.username),
-        "avatar": str(user.avatar),
         "id": str(user.id)
     }
 
@@ -58,7 +57,6 @@ async def get_information_about_account_http():
         response = Response(
             data = {
                 "username": str(user.username),
-                "avatar": str(user.avatar),
                 "id": str(user.id)
             }
         )
