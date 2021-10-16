@@ -242,8 +242,7 @@ async def fetch_friends():
         for id in friendships_ids:
             friendships.append({
                 'id': id,
-                'username': user_session.query(User.username).filter(User.id == id).one()[0],
-                'avatar': str(user_session.query(User.avatar).filter(User.id == id).one()[0])
+                'username': user_session.query(User.username).filter(User.id == id).one()[0]
             })
 
         return jsonify(Response(data=friendships).__dict__)
