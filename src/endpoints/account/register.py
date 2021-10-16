@@ -15,6 +15,11 @@ from Crypto.PublicKey import RSA
 import bcrypt
 import base64
 
+# Images
+from PIL import Image
+from io import BytesIO
+import os
+
 # Models
 from models.errors._api_error import ApiError
 
@@ -89,16 +94,18 @@ async def register():
             else:
                 hashed_pass = bcrypt.hashpw(bytes(password, 'utf-8'), bcrypt.gensalt())
 
-                encoded_avatar = base64.b64encode(open(app.static_folder+ '/images/socialify-logo.png', 'rb').read())
-
                 new_user = User(
                     username=body['username'],
                     password=hashed_pass,
-                    avatar=encoded_avatar,
                     sids='[]'
                 )
 
                 user_session.add(new_user)
+                user_session.flush()
+
+                f = Image.open(BytesIO(app.static_folder+ '/images/socialify-logo.png'))
+                f.save(f'{os.path.join(app.config["AVATARS_FOLDER"]{new_user.id}.png'))
+
                 user_session.commit()
 
                 key_session.query(Key).filter(Key.pub_key==pub_key_string).delete()
