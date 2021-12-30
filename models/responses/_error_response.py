@@ -1,4 +1,4 @@
 class ErrorResponse(object):
-    def __init__(self, errors):
-        self.errors = errors
+    def __init__(self, error):
+        self.error = error
         self.success = False

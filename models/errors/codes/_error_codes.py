@@ -24,3 +24,4 @@ class Error(object):
 
     # Friends
     InvalidNumberOfUsers = 14
+    InvalidAccept = 15

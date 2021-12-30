@@ -18,11 +18,8 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 
-@app.route(f'{route}/getKey', methods=HTTP_METHODS)
+@app.route(f'{route}/getKey', methods=['GET'])
 async def get_key():
-    if request.method != 'POST':
-        return render_template('what_are_you_looking_for.html')
-
     try:
         headers = get_headers(request, without_fingerprint)
 
@@ -31,9 +28,14 @@ async def get_key():
             code = Error().InvalidHeaders,
             reason = 'Some required request headers not found.'
         ).__dict__
-        
+
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error = error).__dict__)
+
+    print(headers)
+
+    if 'text/html' in headers['Accept']:
+        return render_template('what_are_you_looking_for.html')
 
     if verify_authtoken(headers, "getKey"):
         key = generate_keys()
@@ -41,9 +43,11 @@ async def get_key():
         pub_key = key.publickey().exportKey().decode('utf-8')
         priv_key = key.exportKey().decode('utf-8')
 
+        clear_pub_key = pub_key.replace('\n', '').replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', '')
+
         new_key = Key(
-            pub_key = pub_key,
-            priv_key = priv_key
+            pub_key = clear_pub_key,
+            priv_key = priv_key,
             )
 
         key_session.add(new_key)
@@ -51,7 +55,7 @@ async def get_key():
 
         response = Response(
             data={
-                "pubKey": f'{pub_key}'
+                "pubKey": f'{clear_pub_key}'
             }
         )
 
@@ -64,4 +68,4 @@ async def get_key():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error = error).__dict__)

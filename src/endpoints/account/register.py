@@ -42,7 +42,7 @@ async def register():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error = error).__dict__)
 
     if verify_authtoken(headers, 'register'):
         body = request.get_json(force=True)
@@ -60,7 +60,7 @@ async def register():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
 
         priv_key = RSA.importKey(priv_key)
 
@@ -74,7 +74,7 @@ async def register():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
 
         repeat_password = decrypt_rsa(body['repeat_password'], priv_key)
 
@@ -88,7 +88,7 @@ async def register():
                 ).__dict__
 
                 return jsonify(ErrorResponse(
-                            errors = [error]).__dict__)
+                            error = error).__dict__)
 
             else:
                 hashed_pass = bcrypt.hashpw(bytes(password, 'utf-8'), bcrypt.gensalt())
@@ -118,7 +118,7 @@ async def register():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                        errors = [error]).__dict__)
+                        error = error).__dict__)
     else:
         error = ApiError(
             code = Error().InvalidAuthToken,
@@ -126,4 +126,4 @@ async def register():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error = error).__dict__)

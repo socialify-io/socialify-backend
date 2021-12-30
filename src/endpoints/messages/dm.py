@@ -64,6 +64,7 @@ def fetch_last_unread_dms():
     user_id = get_user_id(request)
     dms = user_session.query(DM).filter(DM.receiver == user_id, DM.is_read == False).all()
     users_with_new_dms = []
+    print(users_with_new_dms)
 
     for dm in dms:
         if dm.sender in users_with_new_dms:
@@ -84,7 +85,7 @@ def fetch_last_unread_dms():
         }
 
         dms_json.append(dm_json)
-
+    print(dms_json)
     emit('fetch_last_unread_dms', dms_json, to=request.sid)
 
 @socketio.event

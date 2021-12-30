@@ -2,6 +2,7 @@ with_fingerprint = True
 without_fingerprint = False
 
 def get_headers(request, is_with_fingerprint):
+    print(request.headers)
     headers = {
         'Content-Type': request.headers['Content-Type'],
         'User-Agent': request.headers['User-Agent'],
@@ -9,6 +10,7 @@ def get_headers(request, is_with_fingerprint):
         'Timestamp': int(request.headers['Timestamp']),
         'AppVersion': request.headers['AppVersion'],
         'AuthToken': request.headers['AuthToken'],
+        'Accept': request.headers['Accept']
     }
 
     if is_with_fingerprint:

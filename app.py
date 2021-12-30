@@ -53,7 +53,7 @@ def bad_request(e):
     ).__dict__
 
     return jsonify(ErrorResponse(
-        errors=[error]).__dict__)
+        error=error).__dict__)
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -67,7 +67,7 @@ def internal_server_error(e):
     ).__dict__
 
     return jsonify(ErrorResponse(
-        errors=[error]).__dict__)
+        error=error).__dict__)
 
 @app.after_request
 def add_header(response):
