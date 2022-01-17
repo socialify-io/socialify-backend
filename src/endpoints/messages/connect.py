@@ -32,22 +32,22 @@ def connect():
         ).__dict__
 
         emit('connect', ErrorResponse(
-                        errors = [error]).__dict__)
+                        error = error).__dict__)
         return
 
     if verify_authtoken(headers, 'connect'):
         try:
-            userId = user_session.query(Device.userId).filter(Device.fingerprint == headers['Fingerprint']).one()
+            userId = user_session.query(Device.userId).filter(Device.deviceId == headers['DeviceId']).one()
             userId = int(userId[0])
 
         except:
             error = ApiError(
                 code = Error().InvalidFingerprint,
-                reason = 'Fingerprint is not valid. Device may be deleted.'
+                reason = 'Fingerprint is not valid. Device may be deleted. DEVICE ID ZMIEN TO!!!!!!'
             ).__dict__
 
             emit('connect', ErrorResponse(
-                        errors = [error]).__dict__)
+                        error = error).__dict__)
             return
 
         pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.id == headers['DeviceId']).one()
@@ -57,8 +57,8 @@ def connect():
                 f'{headers["Timestamp"]}.{signature}.{headers["Fingerprint"]}', 'utf-8')).hexdigest().upper()
             message_token = f'#AUTH.{message_token_core}'
 
-            user_session.query(Device).filter(Device.userId == userId).filter(Device.fingerprint == headers['Fingerprint']).update(dict(messageToken=message_token))
-            user_session.query(Device).filter(Device.userId == userId).filter(Device.fingerprint == headers['Fingerprint']).update(dict(status=Status().Active))
+            user_session.query(Device).filter(Device.userId == userId).filter(Device.deviceId == headers['DeviceId']).update(dict(messageToken=message_token))
+            user_session.query(Device).filter(Device.userId == userId).filter(Device.deviceId == headers['DeviceId']).update(dict(status=Status().Active))
 
             sids = json.loads(user_session.query(User.sids).filter(User.id ==
                 userId).one()[0])
@@ -78,7 +78,7 @@ def connect():
             ).__dict__
 
             emit('connect', ErrorResponse(
-                        errors = [error]).__dict__)
+                        error = error).__dict__)
             return
     else:
         error = ApiError(
@@ -87,5 +87,5 @@ def connect():
         ).__dict__
 
         emit('connect', ErrorResponse(
-                        errors = [error]).__dict__)
+                        error = error).__dict__)
         return

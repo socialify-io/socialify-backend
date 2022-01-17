@@ -1,5 +1,7 @@
 from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO
+import logging
+import datetime
 
 # Models
 from models.errors._api_error import ApiError
@@ -16,6 +18,8 @@ app.config['AVATARS_FOLDER'] = AVATARS_FOLDER
 
 VERSION = 0.1
 route = f"/api/v{VERSION}"
+
+logging.basicConfig(filename=f'./logs/logs.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 # Database
 from sqlalchemy import create_engine

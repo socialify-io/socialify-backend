@@ -94,7 +94,7 @@ async def new_device():
                     appVersion=headers['AppVersion'],
                     os=headers['OS'],
                     pubKey=body['device']['signPubKey'],
-                    fingerprint=body['device']['fingerprint'],
+                    fingerprint="dupa",
                     deviceName=body['device']['deviceName'],
                     deviceIP=request.remote_addr,
                     timestamp=date,
