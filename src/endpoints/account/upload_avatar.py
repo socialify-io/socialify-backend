@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from db.users_db_declarative import Device, User
 
 # Helpers
-from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.get_headers import get_headers, with_device_id, without_device_id
 from ...helpers.verify_authtoken import verify_authtoken
 from ...helpers.RSA_helper import verify_sign
 
@@ -31,7 +31,7 @@ async def upload_avatar():
     if request.method != 'POST':
         return render_template('what_are_you_looking_for.html')
     try:
-        headers = get_headers(request, with_fingerprint)
+        headers = get_headers(request, with_device_id)
 
     except:
         error = ApiError(

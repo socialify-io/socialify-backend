@@ -17,12 +17,10 @@ conn.execute('''CREATE TABLE devices
         appVersion TEXT NOT NULL,
         os TEXT NOT NULL,
         pubKey TEXT NOT NULL,
-        fingerprint VARCHAR(40) NOT NULL,
         deviceName TEXT NOT NULL,
         deviceIP VARCHAR(15) NOT NULL,
         timestamp TIMESTAMP NOT NULL,
         last_active TIMESTAMP NOT NULL,
-        messageToken VARCHAR(46) NULL,
         status INTEGER NOT NULL,
 
         FOREIGN KEY (userId) REFERENCES users (id)

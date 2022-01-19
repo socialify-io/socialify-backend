@@ -6,7 +6,7 @@ from db.keys_db_declarative import Key
 
 # Helpers
 from ...helpers.RSA_helper import generate_keys
-from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.get_headers import get_headers, with_device_id, without_device_id
 from ...helpers.verify_authtoken import verify_authtoken
 
 # Models
@@ -21,7 +21,7 @@ from models.errors.codes._error_codes import Error
 @app.route(f'{route}/getKey', methods=['GET'])
 async def get_key():
     try:
-        headers = get_headers(request, without_fingerprint)
+        headers = get_headers(request, without_device_id)
 
     except:
         error = ApiError(

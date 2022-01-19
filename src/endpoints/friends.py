@@ -7,7 +7,7 @@ import json
 from db.users_db_declarative import Device, User, FriendRequest, Friendship
 
 # Helpers
-from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ..helpers.get_headers import get_headers, with_device_id, without_device_id
 from ..helpers.verify_authtoken import verify_authtoken
 from ..helpers.RSA_helper import verify_sign
 
@@ -30,7 +30,7 @@ async def send_friend_request():
     if request.method != 'POST':
         return render_template('what_are_you_looking_for.html')
     try:
-        headers = get_headers(request, with_fingerprint)
+        headers = get_headers(request, with_device_id)
 
     except:
         error = ApiError(
@@ -97,7 +97,7 @@ async def fetch_pending_friends_requests():
     if request.method != 'POST':
         return render_template('what_are_your_looking_for.html')
     try:
-        headers = get_headers(request, with_fingerprint)
+        headers = get_headers(request, with_device_id)
 
     except:
         error = ApiError(
@@ -157,7 +157,7 @@ async def accept_friend_request():
     if request.method != 'POST':
         return render_template('what_are_your_looking_for.html')
     try:
-        headers = get_headers(request, with_fingerprint)
+        headers = get_headers(request, with_device_id)
 
     except:
         error = ApiError(
@@ -221,7 +221,7 @@ async def fetch_friends():
     if request.method != 'POST':
         return render_template('what_are_your_looking_for.html')
     try:
-        headers = get_headers(request, without_fingerprint)
+        headers = get_headers(request, without_device_id)
 
     except:
         error = ApiError(
@@ -261,7 +261,7 @@ async def remove_friend():
     if request.method != 'POST':
         return render_template('what_are_your_looking_for.html')
     try:
-        headers = get_headers(request, with_fingerprint)
+        headers = get_headers(request, with_device_id)
 
     except:
         error = ApiError(
@@ -319,7 +319,7 @@ async def get_mutual_friends():
     if request.method != 'POST':
         return render_template('what_are_your_looking_for.html')
     try:
-        headers = get_headers(request, without_fingerprint)
+        headers = get_headers(request, without_device_id)
 
     except:
         error = ApiError(

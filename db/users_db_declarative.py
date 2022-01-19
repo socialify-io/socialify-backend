@@ -55,12 +55,10 @@ class Device(UserBase):
     appVersion = Column(TEXT, nullable=False)
     os = Column(TEXT, nullable=False)
     pubKey = Column(TEXT, nullable=False)
-    fingerprint = Column(VARCHAR(40), nullable=False)
     deviceName = Column(TEXT, nullable=False)
     deviceIP = Column(VARCHAR(15), nullable=False)
     timestamp = Column(TIMESTAMP, nullable=False)
     last_active = Column(TIMESTAMP, nullable=False)
-    messageToken = Column(VARCHAR(46), nullable=True)
     status = Column(INTEGER, nullable=False)
 
 class FriendRequest(UserBase):

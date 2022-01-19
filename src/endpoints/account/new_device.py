@@ -6,7 +6,7 @@ from db.keys_db_declarative import Key
 from db.users_db_declarative import User, Device
 
 # Helpers
-from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.get_headers import get_headers, with_device_id, without_device_id
 from ...helpers.verify_authtoken import verify_authtoken
 from ...helpers.RSA_helper import decrypt_rsa
 
@@ -32,7 +32,7 @@ async def new_device():
         return render_template('what_are_you_looking_for.html')
 
     try:
-        headers = get_headers(request, without_fingerprint)
+        headers = get_headers(request, without_device_id)
 
     except:
         error = ApiError(
@@ -94,7 +94,6 @@ async def new_device():
                     appVersion=headers['AppVersion'],
                     os=headers['OS'],
                     pubKey=body['device']['signPubKey'],
-                    fingerprint="dupa",
                     deviceName=body['device']['deviceName'],
                     deviceIP=request.remote_addr,
                     timestamp=date,

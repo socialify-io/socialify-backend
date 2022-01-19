@@ -7,7 +7,7 @@ from Crypto.Signature import PKCS1_v1_5
 import json
 
 # Helpers
-from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ..helpers.get_headers import get_headers, with_device_id, without_device_id
 
 def generate_keys():
     modulus_length = 2048
@@ -27,11 +27,15 @@ def decrypt_rsa(encoded_msg, key):
     return decoded_msg.decode()
 
 def verify_sign(request, key, endpoint):
-    headers = get_headers(request, with_fingerprint)
+    headers = get_headers(request, with_device_id)
 
     pub_key = key[0]
+    pem_prefix = '-----BEGIN RSA PRIVATE KEY-----\n'
+    pem_suffix = '\n-----END RSA PRIVATE KEY-----'
+    pub_key = '{}{}{}'.format(pem_prefix, pub_key, pem_suffix)
+
     pub_key = RSA.importKey(pub_key)
-    
+
     try:
         body = request.get_json()
         if body == None:
@@ -42,12 +46,11 @@ def verify_sign(request, key, endpoint):
     mapped_headers = ""
     mapped_signature_json_check = ""
 
-    for value in headers:
-        mapped_headers += f'{value}={headers[value]}' + '&'
+    mapped_headers = f"Content-Type={headers['Content-Type']}&User-Agent={headers['User-Agent']}&OS={headers['OS']}&Timestamp={headers['Timestamp']}&AppVersion={headers['AppVersion']}&AuthToken={headers['AuthToken']}&UserId={headers['UserId']}&DeviceId={headers['DeviceId']}&"
 
     signature_json_check = {
         'headers': mapped_headers,
-        'body': f'{body}',
+        'body': '{}',
         'timestamp': str(headers["Timestamp"]),
         'authToken': str(headers["AuthToken"]),
         'endpointUrl': f'{route}/{endpoint}'
@@ -58,8 +61,9 @@ def verify_sign(request, key, endpoint):
 
     verifier = PKCS1_v1_5.new(pub_key)
     digest = SHA.new(bytes(mapped_signature_json_check, 'utf-8'))
+
+    print(digest.hexdigest())
     print(json.dumps(signature_json_check))
-    if verifier.verify(digest, base64.b64decode(request.headers['Signature'])):
-        return True
-    else:
-        return False
+
+    return verifier.verify(digest, base64.b64decode(request.headers['Signature']))
+

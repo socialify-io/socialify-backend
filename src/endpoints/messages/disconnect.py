@@ -8,7 +8,7 @@ import hashlib
 from db.users_db_declarative import Device
 
 # Helpers
-from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.get_headers import get_headers, with_device_id, without_device_id
 from ...helpers.verify_authtoken import verify_authtoken
 from ...helpers.RSA_helper import verify_sign
 
@@ -21,12 +21,8 @@ from models._status_codes import Status
 
 @socketio.on('disconnect')
 def disconnect():
-    headers = get_headers(request, with_fingerprint)
+    headers = get_headers(request, with_device_id)
 
-    userId = user_session.query(Device.userId).filter(Device.fingerprint == headers["Fingerprint"]).one()
-    userId = int(userId[0])
-    
-    user_session.query(Device).filter(Device.userId == userId).filter(Device.fingerprint == headers['Fingerprint']).update(dict(messageToken=None))
-    user_session.query(Device).filter(Device.userId == userId).filter(Device.fingerprint == headers['Fingerprint']).update(dict(status=Status().Inactive))
+    user_session.query(Device).filter(Device.userId == headers['UserId']).filter(Device.id == headers['DeviceId']).update(dict(status=Status().Inactive))
 
     user_session.commit()

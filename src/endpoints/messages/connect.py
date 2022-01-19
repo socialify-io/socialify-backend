@@ -8,7 +8,7 @@ import hashlib
 from db.users_db_declarative import User, Device
 
 # Helpers
-from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.get_headers import get_headers, with_device_id, without_device_id
 from ...helpers.verify_authtoken import verify_authtoken
 from ...helpers.RSA_helper import verify_sign
 
@@ -23,7 +23,7 @@ from models._status_codes import Status
 def connect():
     try:
         signature = request.headers['Signature']
-        headers = get_headers(request, with_fingerprint)
+        headers = get_headers(request, with_device_id)
 
     except:
         error = ApiError(
@@ -36,40 +36,23 @@ def connect():
         return
 
     if verify_authtoken(headers, 'connect'):
-        try:
-            userId = user_session.query(Device.userId).filter(Device.deviceId == headers['DeviceId']).one()
-            userId = int(userId[0])
-
-        except:
-            error = ApiError(
-                code = Error().InvalidFingerprint,
-                reason = 'Fingerprint is not valid. Device may be deleted. DEVICE ID ZMIEN TO!!!!!!'
-            ).__dict__
-
-            emit('connect', ErrorResponse(
-                        error = error).__dict__)
-            return
-
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.id == headers['DeviceId']).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == headers['UserId'], Device.id == headers['DeviceId']).one()
 
         if verify_sign(request, pub_key, 'connect'):
-            message_token_core = hashlib.sha1(bytes(
-                f'{headers["Timestamp"]}.{signature}.{headers["Fingerprint"]}', 'utf-8')).hexdigest().upper()
-            message_token = f'#AUTH.{message_token_core}'
-
-            user_session.query(Device).filter(Device.userId == userId).filter(Device.deviceId == headers['DeviceId']).update(dict(messageToken=message_token))
-            user_session.query(Device).filter(Device.userId == userId).filter(Device.deviceId == headers['DeviceId']).update(dict(status=Status().Active))
+            user_session.query(Device).filter(Device.userId == headers['UserId']).filter(Device.id == headers['DeviceId']).update(dict(status=Status().Active))
 
             sids = json.loads(user_session.query(User.sids).filter(User.id ==
-                userId).one()[0])
+                headers['UserId']).one()[0])
             sids.append(request.sid)
             sids = json.dumps(sids)
             user_session.query(User).filter(User.id ==
-                    userId).update({'sids': sids})
+                    headers['UserId']).update({'sids': sids})
 
             user_session.commit()
 
-            emit('connect', Response(data={'messageToken': message_token}).__dict__)
+            print("CONECTED!!!!!!!")
+
+            emit('connect', Response(data={}).__dict__)
             return
         else:
             error = ApiError(
@@ -89,3 +72,4 @@ def connect():
         emit('connect', ErrorResponse(
                         error = error).__dict__)
         return
+

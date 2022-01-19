@@ -5,7 +5,7 @@ from flask import render_template, request, jsonify
 from db.error_reports_db_declarative import ErrorReport
 
 # Helpers
-from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.get_headers import get_headers, with_device_id, without_device_id
 from ...helpers.verify_authtoken import verify_authtoken
 
 # Datatime
@@ -27,7 +27,7 @@ async def report_error():
         return render_template('what_are_you_looking_for.html')
 
     try:
-        headers = get_headers(request, without_fingerprint)
+        headers = get_headers(request, without_device_id)
 
     except:
         error = ApiError(

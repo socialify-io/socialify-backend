@@ -9,7 +9,7 @@ import hashlib
 from db.users_db_declarative import Device, User, DM
 
 # Helpers
-from ...helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
+from ...helpers.get_headers import get_headers, with_device_id, without_device_id
 from ...helpers.verify_authtoken import verify_authtoken
 from ...helpers.RSA_helper import verify_sign
 from ...helpers.get_user_id import get_user_id
@@ -28,7 +28,7 @@ from models.errors.codes._error_codes import Error
 
 @socketio.event
 def send_dm(data):
-    headers = get_headers(request, with_fingerprint)
+    headers = get_headers(request, with_device_id)
     user_id = get_user_id(request)
     username = user_session.query(User.username).filter(User.id ==
             user_id).one()[0]
