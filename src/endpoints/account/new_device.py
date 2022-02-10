@@ -41,7 +41,7 @@ async def new_device():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
     if verify_authtoken(headers, "newDevice"):
         body = request.get_json(force=True)
@@ -59,7 +59,7 @@ async def new_device():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
 
         priv_key = RSA.importKey(priv_key)
 
@@ -73,7 +73,7 @@ async def new_device():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
 
         usernames = user_session.query(User.username).all()
 
@@ -122,7 +122,7 @@ async def new_device():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
         else:
             error = ApiError(
                 code=Error().InvalidUsername,
@@ -130,7 +130,7 @@ async def new_device():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
     else:
         error = ApiError(
             code = Error().InvalidAuthToken,
@@ -138,4 +138,4 @@ async def new_device():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)

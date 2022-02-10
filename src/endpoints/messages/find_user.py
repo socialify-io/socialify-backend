@@ -30,8 +30,7 @@ def find_user(phrase):
     response = []
 
     headers = get_headers(request, with_device_id)
-    user_id = user_session.query(Device.userId).filter(Device.fingerprint == headers['Fingerprint']).one()[0]
-    username = user_session.query(User.username).filter(User.id == user_id).one()[0]
+    username = user_session.query(User.username).filter(User.id == headers["UserId"]).one()[0]
 
     for user in results:
         if(user[1] != username):
@@ -40,6 +39,8 @@ def find_user(phrase):
                 'username': user[1]
             }
             response.append(json_model)
+
+    print(response)
 
     emit('find_user', response)
 

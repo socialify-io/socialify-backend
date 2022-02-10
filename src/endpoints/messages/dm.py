@@ -29,7 +29,7 @@ from models.errors.codes._error_codes import Error
 @socketio.event
 def send_dm(data):
     headers = get_headers(request, with_device_id)
-    user_id = get_user_id(request)
+    user_id = headers["UserId"]
     username = user_session.query(User.username).filter(User.id ==
             user_id).one()[0]
 
@@ -43,25 +43,27 @@ def send_dm(data):
         receiver = receiver_id,
         sender = user_id,
         message = message,
-        date = datetime.utcfromtimestamp(headers['Timestamp']).replace(tzinfo=pytz.utc)
+        date = datetime.utcnow().replace(microsecond=0)
     )
 
     user_session.add(new_dm)
     user_session.commit()
 
     emit_model = {
+        'id': new_dm.id,
         'receiverId': receiver_id,
         'senderId': user_id,
         'message': message,
         'username': username,
-        'date': str(datetime.utcfromtimestamp(headers['Timestamp']).replace(tzinfo=pytz.utc))
+        'date': str(new_dm.date.isoformat()+'Z')
     }
 
     emit('send_dm', emit_model, to=sids)
 
 @socketio.event
 def fetch_last_unread_dms():
-    user_id = get_user_id(request)
+    headers = get_headers(request, with_device_id)
+    user_id = headers["UserId"]
     dms = user_session.query(DM).filter(DM.receiver == user_id, DM.is_read == False).all()
     users_with_new_dms = []
     print(users_with_new_dms)
@@ -73,14 +75,20 @@ def fetch_last_unread_dms():
             users_with_new_dms.append(dm.sender)
 
     dms_json = []
+    print(users_with_new_dms)
 
     for user in users_with_new_dms:
         dm = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == user).order_by(DM.id.desc()).first()
+
+        username = user_session.query(User.username).filter(User.id == dm.sender).one()[0]
+
         dm_json = {
+            'id': dm.id,
             'sender': dm.sender,
+            'username': username,
             'receiver': dm.receiver,
             'message': dm.message,
-            'date': str(dm.date.replace(tzinfo=pytz.utc)),
+            'date': str(dm.date.isoformat()+'Z'),
             'isRead': dm.is_read
         }
 
@@ -90,22 +98,26 @@ def fetch_last_unread_dms():
 
 @socketio.event
 def fetch_dms(data):
-    user_id = get_user_id(request)
+    headers = get_headers(request, with_device_id)
+    user_id = headers["UserId"]
 
     sender = data.pop('sender')
-    from_id = data.pop('from')
-    messages_range = data.pop('range')
+#    from_id = data.pop('from')
+#    to_id = data.pop('to')
 
-    messages = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == sender, DM.id.between(1, from_id)).order_by(DM.id.desc()).limit(messages_range)
+    messages = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == sender, DM.is_read == False).order_by(DM.id.desc())
     messages_json = []
 
     for message in messages:
+        username = user_session.query(User.username).filter(User.id == message.sender).one()[0]
+
         message_json = {
             'id': message.id,
+            'username': username,
             'sender': message.sender,
             'receiver': message.receiver,
             'message': message.message,
-            'date': str(message.date.replace(tzinfo=pytz.utc)),
+            'date': str(message.date.isoformat()+'Z'),
             'isRead': message.is_read
         }
 
@@ -114,3 +126,16 @@ def fetch_dms(data):
     messages_json.sort(key= lambda i: i['id'])
 
     emit('fetch_dms', messages_json, to=request.sid)
+
+@socketio.event
+def delete_dms(data):
+    headers = get_headers(request, with_device_id)
+    user_id = headers["UserId"]
+
+    sender = data.pop('sender')
+    from_id = data.pop('from')
+    to_id = data.pop('to')
+
+    messages = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == sender).between(from_id, to_id).delete()
+
+    emit('delete_dms', {'success': True})
