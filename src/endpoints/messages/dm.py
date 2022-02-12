@@ -136,6 +136,11 @@ def delete_dms(data):
     from_id = data.pop('from')
     to_id = data.pop('to')
 
-    messages = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == sender).between(from_id, to_id).delete()
+    messages = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == sender, DM.id.between(from_id, to_id)).all()
+
+    for message in messages:
+        user_session.delete(message)
+
+    user_session.commit()
 
     emit('delete_dms', {'success': True})

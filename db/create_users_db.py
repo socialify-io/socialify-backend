@@ -51,7 +51,7 @@ conn.execute('''CREATE TABLE friendships
 
 conn.execute('''CREATE TABLE dms
     (
-        id INTEGER PRIMARY KEY ASC,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         message TEXT NOT NULL,
         sender INTEGER NOT NULL,
         receiver INTEGER NOT NULL,
