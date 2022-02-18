@@ -26,23 +26,21 @@ def test_get_devices(client):
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
-    with open("tests/id.txt", "r") as f:
-        id = f.read()
+    with open("tests/id.json", "r") as f:
+        ids = json.loads(f.read())
 
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers("getDevices")
-    
-    headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
-        'DeviceId': id})
 
-    mapped_headers = ""
+    headers.update({
+        'UserId': ids["userId"],
+        'DeviceId': ids["deviceId"]})
+
     mapped_signature_json = ""
 
-    for value in headers:
-        mapped_headers += f'{value}={headers[value]}' + '&'
-    
+    mapped_headers = f"Content-Type={headers['Content-Type']}&User-Agent={headers['User-Agent']}&OS={headers['OS']}&Timestamp={headers['Timestamp']}&AppVersion={headers['AppVersion']}&AuthToken={headers['AuthToken']}&UserId={headers['UserId']}&DeviceId={headers['DeviceId']}&"
+
     signature_json = {
         'headers': mapped_headers,
         'body': '{}',
@@ -59,7 +57,7 @@ def test_get_devices(client):
     signature = base64.b64encode(signer.sign(digest))
     headers.update({'Signature': signature})
 
-    resp = client.post(
+    resp = client.get(
         f'{route}/getDevices',
         headers=headers,
         json={}

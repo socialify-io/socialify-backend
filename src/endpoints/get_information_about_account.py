@@ -31,11 +31,8 @@ def get_information_about_account(id):
 
     emit('get_information_about_account', response, to=request.sid)
 
-@app.route(f'{route}/getInformationAboutAccount', methods=HTTP_METHODS)
+@app.route(f'{route}/getInformationAboutAccount', methods=['GET'])
 async def get_information_about_account_http():
-    if request.method != 'POST':
-        return render_template('what_are_you_looking_for.html')
-
     try:
         headers = get_headers(request, without_device_id)
 
@@ -46,13 +43,13 @@ async def get_information_about_account_http():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
     if verify_authtoken(headers, 'getInformationAboutAccount'):
         body = request.get_json(force=True)
-        id = body['userId']
+        user_id = body['userId']
 
-        user = user_session.query(User).filter(User.id == id).one()
+        user = user_session.query(User).filter(User.id == user_id).one()
 
         response = Response(
             data = {
@@ -70,5 +67,5 @@ async def get_information_about_account_http():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 

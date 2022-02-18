@@ -20,11 +20,8 @@ from models.errors.codes._error_codes import Error
 from models._status_codes import Status
 
 
-@app.route(f'{route}/getDevices', methods=HTTP_METHODS)
+@app.route(f'{route}/getDevices', methods=['GET'])
 async def get_devices():
-    if request.method != 'POST':
-        return render_template('what_are_you_looking_for.html')
-
     try:
         headers = get_headers(request, with_device_id)
 
@@ -33,28 +30,18 @@ async def get_devices():
             code = Error().InvalidHeaders,
             reason = 'Some required request headers not found.'
         ).__dict__
-        
+
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
     if verify_authtoken(headers, "getDevices"):
-        try:
-            userId = user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()
-            userId = int(userId[0])
+        user_id = headers["UserId"]
+        device_id = headers["DeviceId"]
 
-        except:
-            error = ApiError(
-                code = Error().InvalidDeviceId,
-                reason = 'Device id is not valid. Device may be deleted.'
-            ).__dict__
-
-            return jsonify(ErrorResponse(
-                        errors = [error]).__dict__)
-
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == userId, Device.id == headers['DeviceId']).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
 
         if verify_sign(request, pub_key, "getDevices"):
-            devices_db = user_session.query(Device).filter(Device.userId == userId).all()
+            devices_db = user_session.query(Device).filter(Device.userId == user_id).all()
             devices = []
 
             for device in devices_db:
@@ -76,7 +63,7 @@ async def get_devices():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                        errors = [error]).__dict__)
+                        error=error).__dict__)
 
     else:
         error = ApiError(
@@ -85,4 +72,4 @@ async def get_devices():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)

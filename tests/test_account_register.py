@@ -22,9 +22,13 @@ def client():
 
 def test_register(client):
     key = get_key(client)
+    pem_prefix = '-----BEGIN RSA PRIVATE KEY-----\n'
+    pem_suffix = '\n-----END RSA PRIVATE KEY-----'
+    key_with_fixes = '{}{}{}'.format(pem_prefix, key, pem_suffix)
+
     password = 'test_pass123'
 
-    pub_key = RSA.importKey(key)
+    pub_key = RSA.importKey(key_with_fixes)
     enc_pass = encrypt_rsa(password, pub_key)
 
     headers = get_headers("register")
@@ -44,17 +48,19 @@ def test_register(client):
 
     json_resp = json.loads(resp.data.decode('utf8'))
 
-    print(json_resp)
-
     assert resp.status_code == 200
     assert json_resp['success'] == True
 
 
 def test_register_second_account(client):
     key = get_key(client)
+    pem_prefix = '-----BEGIN RSA PRIVATE KEY-----\n'
+    pem_suffix = '\n-----END RSA PRIVATE KEY-----'
+    key_with_fixes = '{}{}{}'.format(pem_prefix, key, pem_suffix)
+
     password = 'test_pass123'
 
-    pub_key = RSA.importKey(key)
+    pub_key = RSA.importKey(key_with_fixes)
     enc_pass = encrypt_rsa(password, pub_key)
 
     headers = get_headers("register")

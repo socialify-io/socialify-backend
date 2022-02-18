@@ -21,11 +21,8 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 
-@app.route(f'{route}/reportError', methods=HTTP_METHODS)
+@app.route(f'{route}/reportError', methods=['POST'])
 async def report_error():
-    if request.method != 'POST':
-        return render_template('what_are_you_looking_for.html')
-
     try:
         headers = get_headers(request, without_device_id)
 
@@ -34,9 +31,9 @@ async def report_error():
             code = Error().InvalidHeaders,
             reason = 'Some required request headers not found.'
         ).__dict__
-        
+
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
     if verify_authtoken(headers, "reportError"):
         body = request.get_json(force=True)
@@ -86,5 +83,5 @@ async def report_error():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
-                    
+                    error=error).__dict__)
+

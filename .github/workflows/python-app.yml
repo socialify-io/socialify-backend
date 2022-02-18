@@ -45,8 +45,8 @@ jobs:
         pytest tests/test_get_information_about_account.py
         pytest tests/test_friends_system.py
 
-        pytest tests/test_send_message.py
         pytest tests/test_dms.py
+        pytest tests/test_rooms.py
 
         pytest tests/test_remove_device.py
         pytest tests/test_report_error.py

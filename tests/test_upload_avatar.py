@@ -25,21 +25,19 @@ def test_upload_avatar(client):
     with open('tests/key.pem', 'r') as f:
         priv_key_string = f.read()
 
-    with open('tests/id.txt', 'r') as f:
-        id = f.read()
+    with open('tests/id.json', 'r') as f:
+        ids = json.loads(f.read())
 
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers('uploadAvatar')
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
-        'DeviceId': id})
+        'UserId': ids["userId"],
+        'DeviceId': ids["deviceId"]})
 
-    mapped_headers = ""
+    mapped_headers = f"Content-Type={headers['Content-Type']}&User-Agent={headers['User-Agent']}&OS={headers['OS']}&Timestamp={headers['Timestamp']}&AppVersion={headers['AppVersion']}&AuthToken={headers['AuthToken']}&UserId={headers['UserId']}&DeviceId={headers['DeviceId']}&"
+
     mapped_signature_json = ""
-
-    for value in headers:
-        mapped_headers += f'{value}={headers[value]}' + '&'
 
     payload = {
         'avatar': base64.b64encode(open(app.static_folder+ '/images/socialify-logo.png', 'rb').read()).decode()

@@ -11,7 +11,7 @@ from app import route
 def get_key(client):
     headers = get_headers("getKey")
 
-    resp = client.post(
+    resp = client.get(
         f'{route}/getKey',
         headers=headers
     )

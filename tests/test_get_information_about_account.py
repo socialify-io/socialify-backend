@@ -24,7 +24,7 @@ def client():
 
 def test_get_information_about_account_http(client):
     headers = get_headers('getInformationAboutAccount')
-    resp = client.post(
+    resp = client.get(
         f'{route}/getInformationAboutAccount',
         headers=headers,
         json={"userId": 1}
@@ -37,29 +37,25 @@ def test_get_information_about_account_http(client):
     assert resp.status_code == 200
     assert json_resp['data']['username'] == 'TestAccount123'
 
-message_token = ''
-websocket_client = ''
+websocket_client = None
 
 def test_connect():
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
-    with open("tests/id.txt", "r") as f:
-        id = f.read()
+    with open("tests/id.json", "r") as f:
+        ids = json.loads(f.read())
 
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers('connect')
-
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
-        'DeviceId': id})
+        'UserId': ids["userId"],
+        'DeviceId': ids["deviceId"]})
 
-    mapped_headers = ""
     mapped_signature_json = ""
 
-    for value in headers:
-        mapped_headers += f'{value}={headers[value]}' + '&'
+    mapped_headers = f"Content-Type={headers['Content-Type']}&User-Agent={headers['User-Agent']}&OS={headers['OS']}&Timestamp={headers['Timestamp']}&AppVersion={headers['AppVersion']}&AuthToken={headers['AuthToken']}&UserId={headers['UserId']}&DeviceId={headers['DeviceId']}&"
 
     signature_json = {
         'headers': mapped_headers,
@@ -82,13 +78,12 @@ def test_connect():
     global websocket_client
     websocket_client = socketio.test_client(app, headers=headers)
 
-    global message_token
-    message_token = websocket_client.get_received()[0]['args'][0]['data']['messageToken']
-
     assert websocket_client.is_connected()
 
 def test_get_information_about_account():
     websocket_client.emit('get_information_about_account', 1)
-    response = websocket_client.get_received()[0]['args'][0]
+    response = websocket_client.get_received()[1]['args'][0]
+
+    print(response)
 
     assert response['username'] == 'TestAccount123'

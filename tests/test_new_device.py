@@ -22,9 +22,13 @@ def client():
 
 def test_new_device(client):
     key = get_key(client)
+    pem_prefix = '-----BEGIN RSA PRIVATE KEY-----\n'
+    pem_suffix = '\n-----END RSA PRIVATE KEY-----'
+    key_with_fixes = '{}{}{}'.format(pem_prefix, key, pem_suffix)
+
     password = 'test_pass123'
 
-    pub_key = RSA.importKey(key)
+    pub_key = RSA.importKey(key_with_fixes)
     enc_pass = encrypt_rsa(password, pub_key)
 
     headers = get_headers("newDevice")
@@ -39,8 +43,9 @@ def test_new_device(client):
         'pubKey': key,
         'device': {
             'deviceName': 'Unit test',
-            'signPubKey': pub_key,
-            'fingerprint': hashlib.sha1(bytes(priv_key, 'utf-8')).hexdigest()
+            'signPubKey': pub_key
+                .replace('-----BEGIN PUBLIC KEY-----\n', '')
+                .replace('\n-----END PUBLIC KEY-----', '')
         }
     }
 
@@ -57,8 +62,8 @@ def test_new_device(client):
     f.write(str(priv_key))
     f.close()
 
-    f = open("tests/id.txt", "w")
-    f.write(str(json_resp['data']['deviceId']))
+    f = open("tests/id.json", "w")
+    json.dump(json_resp["data"], f)
     f.close()
 
     assert resp.status_code == 200
@@ -66,9 +71,13 @@ def test_new_device(client):
 
 def test_new_device_2(client):
     key = get_key(client)
+    pem_prefix = '-----BEGIN RSA PRIVATE KEY-----\n'
+    pem_suffix = '\n-----END RSA PRIVATE KEY-----'
+    key_with_fixes = '{}{}{}'.format(pem_prefix, key, pem_suffix)
+
     password = 'test_pass123'
 
-    pub_key = RSA.importKey(key)
+    pub_key = RSA.importKey(key_with_fixes)
     enc_pass = encrypt_rsa(password, pub_key)
 
     headers = get_headers("newDevice")
@@ -83,8 +92,9 @@ def test_new_device_2(client):
         'pubKey': key,
         'device': {
             'deviceName': 'Unit test',
-            'signPubKey': pub_key,
-            'fingerprint': hashlib.sha1(bytes(priv_key, 'utf-8')).hexdigest()
+            'signPubKey': pub_key
+                .replace('-----BEGIN PUBLIC KEY-----\n', '')
+                .replace('\n-----END PUBLIC KEY-----', '')
         }
     }
 
@@ -101,8 +111,8 @@ def test_new_device_2(client):
     f.write(str(priv_key))
     f.close()
 
-    f = open("tests/id2.txt", "w")
-    f.write(str(json_resp['data']['deviceId']))
+    f = open("tests/id2.json", "w")
+    json.dump(json_resp["data"], f)
     f.close()
 
     assert resp.status_code == 200

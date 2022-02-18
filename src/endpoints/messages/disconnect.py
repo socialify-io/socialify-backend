@@ -23,6 +23,6 @@ from models._status_codes import Status
 def disconnect():
     headers = get_headers(request, with_device_id)
 
-    user_session.query(Device).filter(Device.userId == headers['UserId']).filter(Device.id == headers['DeviceId']).update(dict(status=Status().Inactive))
+    user_session.query(Device).filter(Device.userId == headers['UserId'], Device.id == headers['DeviceId']).update(dict(status=Status().Inactive))
 
     user_session.commit()

@@ -25,10 +25,8 @@ from models.responses._error_response import ErrorResponse
 from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
-@app.route(f'{route}/sendFriendRequest', methods=HTTP_METHODS)
+@app.route(f'{route}/sendFriendRequest', methods=['POST'])
 async def send_friend_request():
-    if request.method != 'POST':
-        return render_template('what_are_you_looking_for.html')
     try:
         headers = get_headers(request, with_device_id)
 
@@ -39,11 +37,13 @@ async def send_friend_request():
         ).__dict__
 
         return jsonify(ErrorResponse(
-            errors=[error]).__dict__)
+            error=error).__dict__)
 
     if verify_authtoken(headers, 'sendFriendRequest'):
+        user_id = headers["UserId"]
+        device_id = headers["DeviceId"]
+
         try:
-            user_id = int(user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()[0])
             user_username = user_session.query(User.username).filter(User.id == user_id).one()[0]
 
         except:
@@ -53,10 +53,10 @@ async def send_friend_request():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
 
         pub_key = user_session.query(Device.pubKey).filter(Device.userId ==
-                                                           user_id, Device.fingerprint == headers["Fingerprint"]).one()
+                                                           user_id, Device.id == device_id).one()
 
         if verify_sign(request, pub_key, 'sendFriendRequest'):
             body = request.get_json(force=True)
@@ -81,7 +81,7 @@ async def send_friend_request():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
     else:
         error = ApiError(
             code = Error().InvalidAuthToken,
@@ -89,13 +89,11 @@ async def send_friend_request():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
 
-@app.route(f'{route}/fetchPendingFriendsRequests', methods=HTTP_METHODS)
+@app.route(f'{route}/fetchPendingFriendsRequests', methods=['GET'])
 async def fetch_pending_friends_requests():
-    if request.method != 'POST':
-        return render_template('what_are_your_looking_for.html')
     try:
         headers = get_headers(request, with_device_id)
 
@@ -105,22 +103,13 @@ async def fetch_pending_friends_requests():
             reason='Some required headers not found.'
          ).__dict__
 
-        return jsonify(ErrorResponse(errors=[error]).__dict__)
+        return jsonify(ErrorResponse(error=error).__dict__)
 
     if verify_authtoken(headers, 'fetchPendingFriendsRequests'):
-        try:
-            user_id = int(user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()[0])
+        user_id = headers["UserId"]
+        device_id = headers["DeviceId"]
 
-        except:
-            error = ApiError(
-                code=Error().InvalidDeviceId,
-                reason='Device id is not valid. Device may be deleted.'
-            ).__dict__
-
-            return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
-
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.fingerprint == headers["Fingerprint"]).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
 
         if verify_sign(request, pub_key, 'fetchPendingFriendsRequests'):
             requests = list(user_session.query(FriendRequest).filter(FriendRequest.receiverId == user_id).all())
@@ -142,7 +131,7 @@ async def fetch_pending_friends_requests():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
     else:
         error = ApiError(
             code = Error().InvalidAuthToken,
@@ -150,12 +139,10 @@ async def fetch_pending_friends_requests():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
-@app.route(f'{route}/acceptFriendRequest', methods=HTTP_METHODS)
+@app.route(f'{route}/acceptFriendRequest', methods=['POST'])
 async def accept_friend_request():
-    if request.method != 'POST':
-        return render_template('what_are_your_looking_for.html')
     try:
         headers = get_headers(request, with_device_id)
 
@@ -165,22 +152,13 @@ async def accept_friend_request():
             reason='Some required headers not found.'
          ).__dict__
 
-        return jsonify(ErrorResponse(errors=[error]).__dict__)
+        return jsonify(ErrorResponse(error=error).__dict__)
 
     if verify_authtoken(headers, 'acceptFriendRequest'):
-        try:
-            user_id = int(user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()[0])
+        user_id = headers["UserId"]
+        device_id = headers["DeviceId"]
 
-        except:
-            error = ApiError(
-                code=Error().InvalidDeviceId,
-                reason='Device id is not valid. Device may be deleted.'
-            ).__dict__
-
-            return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
-
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.fingerprint == headers["Fingerprint"]).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
 
         if verify_sign(request, pub_key, 'acceptFriendRequest'):
             body = request.get_json()
@@ -206,7 +184,7 @@ async def accept_friend_request():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
     else:
         error = ApiError(
             code = Error().InvalidAuthToken,
@@ -214,12 +192,10 @@ async def accept_friend_request():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
-@app.route(f'{route}/fetchFriends', methods=HTTP_METHODS)
+@app.route(f'{route}/fetchFriends', methods=['GET'])
 async def fetch_friends():
-    if request.method != 'POST':
-        return render_template('what_are_your_looking_for.html')
     try:
         headers = get_headers(request, without_device_id)
 
@@ -229,11 +205,11 @@ async def fetch_friends():
             reason='Some required headers not found.'
          ).__dict__
 
-        return jsonify(ErrorResponse(errors=[error]).__dict__)
+        return jsonify(ErrorResponse(error=error).__dict__)
 
     if verify_authtoken(headers, 'fetchFriends'):
         body = request.get_json()
-        user_id = body['userId']
+        user_id = body["userId"]
 
         friendships_ids = [id[0] for id in user_session.query(Friendship.invited).filter(Friendship.inviter == user_id)]
         friendships_ids += [id[0] for id in user_session.query(Friendship.inviter).filter(Friendship.invited == user_id)]
@@ -254,12 +230,10 @@ async def fetch_friends():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
-@app.route(f'{route}/removeFriend', methods=HTTP_METHODS)
+@app.route(f'{route}/removeFriend', methods=['POST'])
 async def remove_friend():
-    if request.method != 'POST':
-        return render_template('what_are_your_looking_for.html')
     try:
         headers = get_headers(request, with_device_id)
 
@@ -269,22 +243,13 @@ async def remove_friend():
             reason='Some required headers not found.'
          ).__dict__
 
-        return jsonify(ErrorResponse(errors=[error]).__dict__)
+        return jsonify(ErrorResponse(error=error).__dict__)
 
     if verify_authtoken(headers, 'removeFriend'):
-        try:
-            user_id = int(user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()[0])
+        user_id = headers["UserId"]
+        device_id = headers["DeviceId"]
 
-        except:
-            error = ApiError(
-                code=Error().InvalidDeviceId,
-                reason='Device id is not valid. Device may be deleted.'
-            ).__dict__
-
-            return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
-
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.fingerprint == headers["Fingerprint"]).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
 
         if verify_sign(request, pub_key, 'removeFriend'):
             body = request.get_json()
@@ -304,7 +269,7 @@ async def remove_friend():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
     else:
         error = ApiError(
             code = Error().InvalidAuthToken,
@@ -312,12 +277,10 @@ async def remove_friend():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
-@app.route(f'{route}/getMutualFriends', methods=HTTP_METHODS)
+@app.route(f'{route}/getMutualFriends', methods=['GET'])
 async def get_mutual_friends():
-    if request.method != 'POST':
-        return render_template('what_are_your_looking_for.html')
     try:
         headers = get_headers(request, without_device_id)
 
@@ -327,7 +290,7 @@ async def get_mutual_friends():
             reason='Some required headers not found.'
          ).__dict__
 
-        return jsonify(ErrorResponse(errors=[error]).__dict__)
+        return jsonify(ErrorResponse(error=error).__dict__)
 
     if verify_authtoken(headers, 'getMutualFriends'):
         body = request.get_json()
@@ -368,5 +331,5 @@ async def get_mutual_friends():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 

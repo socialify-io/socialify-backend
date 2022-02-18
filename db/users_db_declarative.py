@@ -87,6 +87,37 @@ class DM(UserBase):
     date = Column(TIMESTAMP, nullable=False)
     is_read = Column(BOOLEAN, nullable=False, default=False)
 
+class Room(UserBase):
+    __tablename__ = 'rooms'
+
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    name = Column(TEXT, nullable=False)
+    is_public = Column(BOOLEAN, nullable=False)
+    password = Column(TEXT, nullable=True)
+
+class RoomRole(UserBase):
+    __tablename__ = 'room_roles'
+
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    name = Column(TEXT, nullable=False)
+
+class RoomMember(UserBase):
+    __tablename__ = 'room_members'
+
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    room = Column(INTEGER, ForeignKey(Room.id), nullable=False)
+    user = Column(INTEGER, ForeignKey(User.id), nullable=False)
+    role = Column(INTEGER, ForeignKey(RoomRole.id), nullable=False)
+
+class Message(UserBase):
+    __tablename__ = 'messages'
+
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    room = Column(INTEGER, ForeignKey(Room.id), nullable=False)
+    sender = Column(INTEGER, ForeignKey(User.id), nullable=False)
+    message = Column(TEXT, nullable=False)
+    date = Column(TIMESTAMP, nullable=False)
+
 engine = create_engine('sqlite:///db/users.db')
 
 UserBase.metadata.create_all(engine)

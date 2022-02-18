@@ -59,20 +59,6 @@ def test_connect():
 
     assert client.is_connected()
 
-def test_send_dm():
-    client.emit('find_user', 'TestAcco')
-    receiver_id = client.get_received()[1]['args'][0][0]['id']
-
-    client.emit('send_dm', {
-        'receiverId': receiver_id,
-        'message': 'Test message'
-        })
-
-    response = client.get_received()[0]['args'][0]
-
-    assert response['message'] == 'Test message'
-    assert response['username'] == 'TestAccount123'
-
 def test_connect_client2():
     with open("tests/key2.pem", "r") as f:
         priv_key_string = f.read()
@@ -115,32 +101,24 @@ def test_connect_client2():
 
     assert client2.is_connected()
 
-def test_fetch_last_unread_dms():
-    client2.emit('fetch_last_unread_dms')
-    response = client2.get_received()[1]['args'][0][0]
-
-    assert response['sender'] == 1
-    assert response['receiver'] == 2
-    assert response['message'] == 'Test message'
-
-def test_fetch_dms():
-    for i in range(20):
-        client2.emit('send_dm', {
-            'receiverId': 1,
-            'message': 'Test message'
-        })
-
-    client.emit('fetch_dms', {'sender': 2})
-
-    response = client.get_received()[20]['args'][0][1]
-    print(response)
-
-    assert response['message'] == 'Test message'
-
-def test_delete_dms():
-    client.emit('delete_dms', {'sender': 2, 'from': 3, 'to': 6})
-
+def test_create_room():
+    client.emit('create_room', {'roomName': 'test_room'})
     response = client.get_received()[0]['args'][0]
     print(response)
 
     assert response['success'] == True
+
+def test_join_room():
+    client2.emit('join_to_room', {'roomId': 1})
+    response = client2.get_received()[0]['args'][0]
+    print(response)
+
+    assert response['success'] == True
+
+def test_send_message():
+    client.emit('send_message', {'roomId': 1, 'message': 'test_message'})
+    response = client.get_received()[0]['args'][0]
+    print(response)
+
+    assert response['message'] == 'test_message'
+

@@ -23,6 +23,7 @@ def get_headers(endpoint):
         'Timestamp': timestamp,
         'AppVersion': app_version,
         'AuthToken': auth_token_hashed.decode(),
+        'Accept': 'application/json'
     }
 
     return headers

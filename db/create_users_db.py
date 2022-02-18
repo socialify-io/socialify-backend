@@ -4,7 +4,7 @@ conn = sql.connect('db/users.db')
 
 conn.execute('''CREATE TABLE users
     (
-        id INTEGER PRIMARY KEY ASC,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
         password TEXT NOT NULL,
         sids TEXT NOT NULL
@@ -12,7 +12,7 @@ conn.execute('''CREATE TABLE users
 
 conn.execute('''CREATE TABLE devices
     (
-        id INTEGER PRIMARY KEY ASC,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId INTEGER NOT NULL,
         appVersion TEXT NOT NULL,
         os TEXT NOT NULL,
@@ -28,7 +28,7 @@ conn.execute('''CREATE TABLE devices
 
 conn.execute('''CREATE TABLE friend_requests
     (
-        id INTEGER PRIMARY KEY ASC,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         receiverId INTEGER NOT NULL,
         requesterId INTEGER NOT NULL,
         requesterUsername TEXT NOT NULL,
@@ -41,7 +41,7 @@ conn.execute('''CREATE TABLE friend_requests
 
 conn.execute('''CREATE TABLE friendships
     (
-        id INTEGER PRIMARY KEY ASC,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         inviter INTEGER NOT NULL,
         invited INTEGER NOT NULL,
 
@@ -60,6 +60,47 @@ conn.execute('''CREATE TABLE dms
 
         FOREIGN KEY (sender) REFERENCES users (id),
         FOREIGN KEY (receiver) REFERENCES users (id)
+    )''')
+
+conn.execute('''CREATE TABLE rooms
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        is_public BOOL NOT NULL,
+        password TEXT
+    )''')
+
+conn.execute('''CREATE TABLE room_roles
+    (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL
+    )''')
+
+conn.execute('''INSERT INTO room_roles (id, name) VALUES (1, "owner")''')
+conn.execute('''INSERT INTO room_roles (id, name) VALUES (2, "member")''')
+
+conn.execute('''CREATE TABLE room_members
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        room INTEGER NOT NULL,
+        user INTEGER NOT NULL,
+        role INTEGER NOT NULL,
+
+        FOREIGN KEY (role) REFERENCES room_roles (id),
+        FOREIGN KEY (room) REFERENCES rooms (id),
+        FOREIGN KEY (user) REFERENCES users (id)
+    )''')
+
+conn.execute('''CREATE TABLE messages
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        room INTEGER NOT NULL,
+        sender INTEGER NOT NULL,
+        message TEXT NOT NULL,
+        date TIMESTAMP NOT NULL,
+
+        FOREIGN KEY (room) REFERENCES rooms (id),
+        FOREIGN KEY (sender) REFERENCES users (id)
     )''')
 
 conn.close()

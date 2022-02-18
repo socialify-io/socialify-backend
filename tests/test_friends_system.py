@@ -25,22 +25,20 @@ def test_send_friend_request(client):
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
-    with open("tests/id.txt", "r") as f:
-        id = f.read()
+    with open("tests/id.json", "r") as f:
+        ids = json.loads(f.read())
 
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers("sendFriendRequest")
 
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
-        'DeviceId': id})
+        'UserId': ids["userId"],
+        'DeviceId': ids["deviceId"]})
 
-    mapped_headers = ""
     mapped_signature_json = ""
 
-    for value in headers:
-        mapped_headers += f'{value}={headers[value]}' + '&'
+    mapped_headers = f"Content-Type={headers['Content-Type']}&User-Agent={headers['User-Agent']}&OS={headers['OS']}&Timestamp={headers['Timestamp']}&AppVersion={headers['AppVersion']}&AuthToken={headers['AuthToken']}&UserId={headers['UserId']}&DeviceId={headers['DeviceId']}&"
 
     body = {
         'userId': 2
@@ -81,22 +79,20 @@ def test_fetch_pending_friends_requests(client):
     with open("tests/key2.pem", "r") as f:
         priv_key_string = f.read()
 
-    with open("tests/id2.txt", "r") as f:
-        id = f.read()
+    with open("tests/id2.json", "r") as f:
+        ids = json.loads(f.read())
 
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers("fetchPendingFriendsRequests")
 
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
-        'DeviceId': id})
+        'UserId': ids["userId"],
+        'DeviceId': ids["deviceId"]})
 
-    mapped_headers = ""
     mapped_signature_json = ""
 
-    for value in headers:
-        mapped_headers += f'{value}={headers[value]}' + '&'
+    mapped_headers = f"Content-Type={headers['Content-Type']}&User-Agent={headers['User-Agent']}&OS={headers['OS']}&Timestamp={headers['Timestamp']}&AppVersion={headers['AppVersion']}&AuthToken={headers['AuthToken']}&UserId={headers['UserId']}&DeviceId={headers['DeviceId']}&"
 
     signature_json = {
         'headers': mapped_headers,
@@ -114,7 +110,7 @@ def test_fetch_pending_friends_requests(client):
     signature = base64.b64encode(signer.sign(digest))
     headers.update({'Signature': signature})
 
-    resp = client.post(
+    resp = client.get(
         f'{route}/fetchPendingFriendsRequests',
         headers=headers,
         json={}
@@ -134,22 +130,20 @@ def test_accept_friend_request(client):
     with open("tests/key2.pem", "r") as f:
         priv_key_string = f.read()
 
-    with open("tests/id2.txt", "r") as f:
-        id = f.read()
+    with open("tests/id2.json", "r") as f:
+        ids = json.loads(f.read())
 
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers("acceptFriendRequest")
 
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
-        'DeviceId': id})
+        'UserId': ids["userId"],
+        'DeviceId': ids["deviceId"]})
 
-    mapped_headers = ""
     mapped_signature_json = ""
 
-    for value in headers:
-        mapped_headers += f'{value}={headers[value]}' + '&'
+    mapped_headers = f"Content-Type={headers['Content-Type']}&User-Agent={headers['User-Agent']}&OS={headers['OS']}&Timestamp={headers['Timestamp']}&AppVersion={headers['AppVersion']}&AuthToken={headers['AuthToken']}&UserId={headers['UserId']}&DeviceId={headers['DeviceId']}&"
 
     payload = {
         'requestId': friend_requests[0]['id']
@@ -191,7 +185,7 @@ def test_fetch_friends(client):
         'userId': 2
     }
 
-    resp = client.post(
+    resp = client.get(
         f'{route}/fetchFriends',
         headers=headers,
         json=payload
@@ -212,7 +206,7 @@ def test_get_mutual_friends(client):
         'users': [1, 2]
     }
 
-    resp = client.post(
+    resp = client.get(
         f'{route}/getMutualFriends',
         headers=headers,
         json=payload
@@ -229,22 +223,20 @@ def test_remove_friend(client):
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
-    with open("tests/id.txt", "r") as f:
-        id = f.read()
+    with open("tests/id.json", "r") as f:
+        ids = json.loads(f.read())
 
     priv_key = RSA.importKey(priv_key_string)
 
     headers = get_headers("removeFriend")
 
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
-        'DeviceId': id})
+        'UserId': ids["userId"],
+        'DeviceId': ids["deviceId"]})
 
-    mapped_headers = ""
     mapped_signature_json = ""
 
-    for value in headers:
-        mapped_headers += f'{value}={headers[value]}' + '&'
+    mapped_headers = f"Content-Type={headers['Content-Type']}&User-Agent={headers['User-Agent']}&OS={headers['OS']}&Timestamp={headers['Timestamp']}&AppVersion={headers['AppVersion']}&AuthToken={headers['AuthToken']}&UserId={headers['UserId']}&DeviceId={headers['DeviceId']}&"
 
     payload = {
         'userId': 2

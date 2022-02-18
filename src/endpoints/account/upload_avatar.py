@@ -26,10 +26,8 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 
-@app.route(f'{route}/uploadAvatar', methods=HTTP_METHODS)
+@app.route(f'{route}/uploadAvatar', methods=['UPDATE', 'POST'])
 async def upload_avatar():
-    if request.method != 'POST':
-        return render_template('what_are_you_looking_for.html')
     try:
         headers = get_headers(request, with_device_id)
 
@@ -40,23 +38,13 @@ async def upload_avatar():
         ).__dict__
 
         return jsonify(ErrorResponse(
-            errors=[error]).__dict__)
+            error=error).__dict__)
 
     if verify_authtoken(headers, 'uploadAvatar'):
-        try:
-            user_id = user_session.query(Device.userId).filter(Device.id == headers['DeviceId']).one()
-            user_id = int(user_id[0])
+        user_id = headers["UserId"]
+        device_id = headers["DeviceId"]
 
-        except:
-            error = ApiError(
-                code=Error().InvalidDeviceId,
-                reason='Device id is not valid. Device may be deleted.'
-            ).__dict__
-
-            return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
-
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.fingerprint == headers["Fingerprint"]).one()
+        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
 
         if verify_sign(request, pub_key, 'uploadAvatar'):
             body = request.get_json(force=True)
@@ -74,7 +62,7 @@ async def upload_avatar():
             ).__dict__
 
             return jsonify(ErrorResponse(
-                errors=[error]).__dict__)
+                error=error).__dict__)
     else:
         error = ApiError(
             code = Error().InvalidAuthToken,
@@ -82,7 +70,7 @@ async def upload_avatar():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
 @app.route(f'{route}/getAvatar/<user_id>', methods=['GET'])
 def get_avatar(user_id):
