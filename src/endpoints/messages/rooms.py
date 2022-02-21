@@ -43,7 +43,7 @@ def create_room(data):
     user_session.add(new_room_member)
     user_session.commit()
     join_room(new_room.id)
-    emit('create', {'success': True}, to=request.sid)
+    emit('create_room', {'success': True, "data": {"roomId": new_room.id}}, to=request.sid)
 
 @socketio.event
 def join_to_room(data):
@@ -104,7 +104,7 @@ def send_message(data):
         emit_model = {
             "id": new_message.id,
             "message": message,
-            "sender": user_id,
+            "sender": int(user_id),
             "username": username,
             "date": str(new_message.date.isoformat()+'Z')
         }
