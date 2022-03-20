@@ -46,26 +46,60 @@ def create_room(data):
     emit('create_room', {'success': True, "data": {"roomId": new_room.id}}, to=request.sid)
 
 @socketio.event
+def activate_room(data):
+    headers = get_headers(request, with_device_id)
+    room_id = data.pop('roomId')
+    username = user_session.query(User.username).filter(User.id == headers['UserId']).one().username
+
+    new_message = Message(
+        room = room_id,
+        is_system_notification = True,
+        message = f'Room was created by {username}',
+        date = datetime.utcnow().replace(microsecond=0)
+    )
+
+    user_session.add(new_message)
+    user_session.commit()
+
+    emit_model = {
+        "id": new_message.id,
+        "roomId": room_id,
+        "is_system_notification": True,
+        "message": new_message.message,
+        "username": None,
+        "date": str(new_message.date.isoformat()+'Z')
+    }
+
+    emit('send_message', emit_model, room=room_id)
+
+@socketio.event
 def join_to_room(data):
     headers = get_headers(request, with_device_id)
     user_id = headers['UserId']
     room_id = data.pop('roomId')
 
     room = user_session.query(Room).filter(Room.id == room_id).one()
-    if room.is_public:
-        new_member = RoomMember(
-            room=room_id,
-            user=user_id,
-            role=member
-        )
-
-        user_session.add(new_member)
-        user_session.commit()
-        join_room(room_id)
-        emit('join_room', {"success": True}, to=request.sid)
-
+    if room == [] or room == None:
+        emit('join_to_room', {'success': False, "data": {"error": "Room not found"}}, to=request.sid)
+        return
     else:
-        emit("join_room", "You are not allowed to join this room")
+        if room.is_public:
+            if isUserInRoom(room_id, user_id):
+                new_member = RoomMember(
+                    room=room_id,
+                    user=user_id,
+                    role=member
+                )
+
+                user_session.add(new_member)
+                user_session.commit()
+                join_room(room_id)
+                emit('join_room', {"success": True, "data": {"roomName": room.name}}, to=request.sid)
+            else:
+                emit('join_to_room', "NE DZIALA AA", to=request.sid)
+
+        else:
+            emit("join_room", "You are not allowed to join this room")
 
 @socketio.event
 def connect_room(data):
@@ -103,15 +137,50 @@ def send_message(data):
 
         emit_model = {
             "id": new_message.id,
+            "roomId": room_id,
             "message": message,
             "sender": int(user_id),
             "username": username,
+            "is_system_notification": False,
             "date": str(new_message.date.isoformat()+'Z')
         }
 
         emit('send_message', emit_model, room=room_id)
     else:
         emit("send_message", "You are not allowed to send messages to this room")
+
+@socketio.event
+def get_informations_about_room(data):
+    headers = get_headers(request, with_device_id)
+    user_id = headers['UserId']
+    room_id = data.pop('roomId')
+
+    if isUserInRoom(room_id, user_id):
+        room = user_session.query(Room).filter(Room.id == room_id).one()
+        room_members = user_session.query(RoomMember).filter(RoomMember.room == room_id).all()
+        room_members_ids = [room_member.user for room_member in room_members]
+        room_members_names = [user_session.query(User.username).filter(User.id == room_member_id).one()[0] for room_member_id in room_members_ids]
+        room_members_roles = [user_session.query(RoomMember.role).filter(RoomMember.room == room_id, RoomMember.user == room_member_id).one()[0] for room_member_id in room_members_ids]
+
+        room_members_model = [
+            {
+                "id": room_member_id,
+                "username": room_member_name,
+                "role": room_member_role
+            } for room_member_id, room_member_name, room_member_role in zip(room_members_ids, room_members_names, room_members_roles)
+        ]
+
+        emit('get_information_about_room', {
+            "success": True,
+            "data": {
+                "roomId": room.id,
+                "isPublic": room.is_public,
+                "roomName": room.name,
+                "roomMembers": room_members_model
+            }
+        }, room=room_id)
+    else:
+        emit("get_information_about_room", "You are not allowed to get information about this room")
 
 def isUserInRoom(room, user_id):
     isMember = user_session.query(RoomMember).filter(RoomMember.room == room, RoomMember.user == user_id).one()

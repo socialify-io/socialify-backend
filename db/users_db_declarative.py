@@ -114,7 +114,8 @@ class Message(UserBase):
 
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     room = Column(INTEGER, ForeignKey(Room.id), nullable=False)
-    sender = Column(INTEGER, ForeignKey(User.id), nullable=False)
+    sender = Column(INTEGER, ForeignKey(User.id), nullable=True)
+    is_system_notification = Column(BOOLEAN, nullable=False, default=False)
     message = Column(TEXT, nullable=False)
     date = Column(TIMESTAMP, nullable=False)
 

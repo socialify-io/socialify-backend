@@ -95,7 +95,8 @@ conn.execute('''CREATE TABLE messages
     (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         room INTEGER NOT NULL,
-        sender INTEGER NOT NULL,
+        sender INTEGER DEFAULT NULL,
+        is_system_notification BOOL NOT NULL DEFAULT FALSE,
         message TEXT NOT NULL,
         date TIMESTAMP NOT NULL,
 
