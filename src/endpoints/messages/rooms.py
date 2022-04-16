@@ -63,7 +63,7 @@ def activate_room(data):
 
     emit_model = {
         "id": new_message.id,
-        "roomId": room_id,
+        "roomId": int(room_id),
         "is_system_notification": True,
         "message": new_message.message,
         "username": None,
@@ -85,6 +85,8 @@ def join_to_room(data):
     else:
         if room.is_public:
             if isUserInRoom(room_id, user_id):
+                emit('join_to_room', "NE DZIALA AA", to=request.sid)
+            else:
                 new_member = RoomMember(
                     room=room_id,
                     user=user_id,
@@ -94,9 +96,30 @@ def join_to_room(data):
                 user_session.add(new_member)
                 user_session.commit()
                 join_room(room_id)
-                emit('join_room', {"success": True, "data": {"roomName": room.name}}, to=request.sid)
-            else:
-                emit('join_to_room', "NE DZIALA AA", to=request.sid)
+                emit('join_to_room', {"success": True, "data": {"roomName": room.name}}, to=request.sid)
+
+                username = user_session.query(User.username).filter(User.id == user_id).one().username
+
+                new_message = Message(
+                    room = room_id,
+                    is_system_notification = True,
+                    message = f'{username} joined',
+                    date = datetime.utcnow().replace(microsecond=0)
+                )
+
+                user_session.add(new_message)
+                user_session.commit()
+
+                emit_model = {
+                    "id": new_message.id,
+                    "roomId": int(room_id),
+                    "is_system_notification": True,
+                    "message": new_message.message,
+                    "username": None,
+                    "date": str(new_message.date.isoformat()+'Z')
+                }
+
+                emit('send_message', emit_model, room=room_id)
 
         else:
             emit("join_room", "You are not allowed to join this room")
@@ -183,8 +206,6 @@ def get_informations_about_room(data):
         emit("get_information_about_room", "You are not allowed to get information about this room")
 
 def isUserInRoom(room, user_id):
-    isMember = user_session.query(RoomMember).filter(RoomMember.room == room, RoomMember.user == user_id).one()
-    if isMember:
-        return True
-    else:
-        return False
+    isMember = user_session.query(RoomMember).filter(RoomMember.room == room, RoomMember.user == user_id).all()
+
+    return len(isMember)
