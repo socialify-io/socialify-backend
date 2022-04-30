@@ -193,19 +193,16 @@ def get_informations_about_room(data):
             } for room_member_id, room_member_name, room_member_role in zip(room_members_ids, room_members_names, room_members_roles)
         ]
 
-        emit('get_information_about_room', {
-            "success": True,
-            "data": {
-                "roomId": room.id,
-                "isPublic": room.is_public,
-                "roomName": room.name,
-                "roomMembers": room_members_model
-            }
+        emit('get_informations_about_room', {
+            "roomId": room.id,
+            "isPublic": room.is_public,
+            "roomName": room.name,
+            "roomMembers": room_members_model
         }, room=room_id)
     else:
-        emit("get_information_about_room", "You are not allowed to get information about this room")
+        emit("get_informations_about_room", "You are not allowed to get information about this room")
 
 def isUserInRoom(room, user_id):
     isMember = user_session.query(RoomMember).filter(RoomMember.room == room, RoomMember.user == user_id).all()
 
-    return len(isMember)
+    return bool(len(isMember))
