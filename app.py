@@ -13,8 +13,12 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 socketio = SocketIO(app, logger=True, engineio_logger=True, policy_server=False, manage_session=False, cors_allowed_origins="*")
 
 HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']
-AVATARS_FOLDER= 'static/avatars/'
+
+AVATARS_FOLDER = 'static/avatars/'
+MEDIA_FOLDER = 'static/media/'
+
 app.config['AVATARS_FOLDER'] = AVATARS_FOLDER
+app.config['MEDIA_FOLDER'] = MEDIA_FOLDER
 
 VERSION = 0.1
 route = f"/api/v{VERSION}"

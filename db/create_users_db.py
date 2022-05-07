@@ -52,7 +52,7 @@ conn.execute('''CREATE TABLE friendships
 conn.execute('''CREATE TABLE dms
     (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        message TEXT NOT NULL,
+        message TEXT NULL,
         sender INTEGER NOT NULL,
         receiver INTEGER NOT NULL,
         date TIMESTAMP NOT NULL,
@@ -102,6 +102,27 @@ conn.execute('''CREATE TABLE messages
 
         FOREIGN KEY (room) REFERENCES rooms (id),
         FOREIGN KEY (sender) REFERENCES users (id)
+    )''')
+
+conn.execute('''CREATE TABLE media_types
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type VARCHAR(10) NOT NULL
+    )''')
+
+conn.execute('''INSERT INTO media_types (id, type) VALUES (1, "image")''')
+
+conn.execute('''CREATE TABLE media
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mediaURL TEXT NOT NULL,
+        type INT NOT NULL,
+        dmId INT,
+        messageId INT,
+
+        FOREIGN KEY (type) REFERENCES media_types (id),
+        FOREIGN KEY (dmId) REFERENCES dms (id),
+        FOREIGN KEY (messageId) REFERENCES messages (id)
     )''')
 
 conn.close()

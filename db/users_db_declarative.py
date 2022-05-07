@@ -81,7 +81,7 @@ class DM(UserBase):
     __tablename__ = 'dms'
 
     id = Column(INTEGER, primary_key=True, autoincrement=True)
-    message = Column(TEXT, nullable=False)
+    message = Column(TEXT, nullable=True)
     sender = Column(INTEGER, ForeignKey(User.id), nullable=False)
     receiver = Column(INTEGER, ForeignKey(User.id), nullable=False)
     date = Column(TIMESTAMP, nullable=False)
@@ -118,6 +118,22 @@ class Message(UserBase):
     is_system_notification = Column(BOOLEAN, nullable=False, default=False)
     message = Column(TEXT, nullable=False)
     date = Column(TIMESTAMP, nullable=False)
+
+class MediaType(UserBase):
+    __tablename__ = 'media_types'
+
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    type = Column(VARCHAR, nullable=False)
+
+class Media(UserBase):
+    __tablename__ = 'media'
+
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    mediaURL = Column(TEXT, nullable=False)
+    type = Column(INTEGER, ForeignKey(MediaType.id), nullable=False)
+    dmId = Column(INTEGER, ForeignKey(DM.id), nullable=True)
+    messageId = Column(INTEGER, ForeignKey(Message.id), nullable=True)
+
 
 engine = create_engine('sqlite:///db/users.db')
 
