@@ -134,3 +134,5 @@ dmypy.json
 QUICK_ENC.py
 tests/*.pem
 tests/*.txt
+static/media/*.png
+static/avatars/*.png

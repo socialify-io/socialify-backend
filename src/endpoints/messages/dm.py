@@ -63,12 +63,14 @@ def send_dm(data):
     for media_element in media:
 
         new_media = Media(
-            mediaURL = f'media/{receiver_id}/',
+            mediaURL = f'{receiver_id}',
             type = media_element["type"],
             dmId = new_dm.id
         )
 
         user_session.add(new_media)
+        user_session.commit()
+        new_media.mediaURL = f'{new_media.mediaURL}-{new_media.id}'
         user_session.commit()
 
         if media_element["type"] == 1:
@@ -138,10 +140,21 @@ def fetch_dms(data):
 #    to_id = data.pop('to')
 
     messages = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == sender, DM.is_read == False).order_by(DM.id.desc())
+
     messages_json = []
+
 
     for message in messages:
         username = user_session.query(User.username).filter(User.id == message.sender).one()[0]
+        media = user_session.query(Media).filter(message.id == Media.dmId).all()
+
+        media_parsed = []
+
+        for media_element in media:
+            media_parsed.append({
+                "mediaURL": media_element.mediaURL,
+                "type": media_element.type
+            })
 
         message_json = {
             'id': message.id,
@@ -150,7 +163,8 @@ def fetch_dms(data):
             'receiver': message.receiver,
             'message': message.message,
             'date': str(message.date.isoformat()+'Z'),
-            'isRead': message.is_read
+            'isRead': message.is_read,
+            'media': media_parsed
         }
 
         messages_json.append(message_json)
