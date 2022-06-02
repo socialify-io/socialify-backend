@@ -55,6 +55,8 @@ def connect():
             emit('connect', Response(data={}).__dict__)
             return
         else:
+            print("NOT CONNECTED!!!!")
+
             error = ApiError(
                 code = Error().InvalidSignature,
                 reason = 'Signature is not valid.'

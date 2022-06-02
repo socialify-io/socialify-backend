@@ -6,6 +6,10 @@ from Crypto.Hash import SHA
 from Crypto.Signature import PKCS1_v1_5
 import json
 
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
+from cryptography.hazmat.primitives import hashes
+
 # Helpers
 from ..helpers.get_headers import get_headers, with_device_id, without_device_id
 
@@ -30,11 +34,11 @@ def verify_sign(request, key, endpoint):
     headers = get_headers(request, with_device_id)
 
     pub_key = key[0]
-    pem_prefix = '-----BEGIN RSA PRIVATE KEY-----\n'
-    pem_suffix = '\n-----END RSA PRIVATE KEY-----'
-    pub_key = '{}{}{}'.format(pem_prefix, pub_key, pem_suffix)
+    # pem_prefix = '-----BEGIN RSA PRIVATE KEY-----\n'
+    # pem_suffix = '\n-----END RSA PRIVATE KEY-----'
+    # pub_key = '{}{}{}'.format(pem_prefix, pub_key, pem_suffix)
 
-    pub_key = RSA.importKey(pub_key)
+    pub_key = load_pem_public_key(bytes(pub_key, 'utf-8'))
 
     try:
         body = request.get_json()
@@ -59,11 +63,18 @@ def verify_sign(request, key, endpoint):
     for value in signature_json_check:
         mapped_signature_json_check += f'{value}={signature_json_check[value]}' + '&'
 
-    verifier = PKCS1_v1_5.new(pub_key)
-    digest = SHA.new(bytes(mapped_signature_json_check, 'utf-8'))
+    #verifier = PKCS1_v1_5.new(pub_key)
+    #digest = SHA.new(bytes(mapped_signature_json_check, 'utf-8'))
 
-    print(digest.hexdigest())
-    print(json.dumps(signature_json_check))
+    # print(digest.hexdigest())
+    # print(json.dumps(signature_json_check))
 
-    return verifier.verify(digest, base64.b64decode(request.headers['Signature']))
+    print(base64.b64decode(request.headers['Signature']))
+
+    #return verifier.verify(digest, base64.b64decode(request.headers['Signature']))
+    isValid = pub_key.verify(base64.b64decode(request.headers['Signature']), bytes(mapped_signature_json_check, 'utf-8'), ec.ECDSA(hashes.SHA256()))
+    if (isValid==None):
+        return True
+    else:
+        return False
 
