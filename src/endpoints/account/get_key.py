@@ -17,6 +17,12 @@ from models.responses._response import Response
 
 from models.errors.codes._error_codes import Error
 
+#Crypto
+from Crypto.PublicKey import ECC
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from  cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, PublicFormat, BestAvailableEncryption, KeySerializationEncryption, NoEncryption
 
 @app.route(f'{route}/getKey', methods=['GET'])
 async def get_key():
@@ -38,24 +44,29 @@ async def get_key():
         return render_template('what_are_you_looking_for.html')
 
     if verify_authtoken(headers, "getKey"):
-        key = generate_keys()
+#        key = ECC.generate(curve='P-256')
+#
+#        private_key = key.export_key(format='PEM')
+#        public_key = key.public_key().export_key(format='PEM')
+#
+#        clear_public_key =  public_key.replace('\n', '').replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', '')
 
-        pub_key = key.publickey().exportKey().decode('utf-8')
-        priv_key = key.exportKey().decode('utf-8')
+        key = ec.generate_private_key(ec.SECP256R1())
 
-        clear_pub_key = pub_key.replace('\n', '').replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', '')
+        pub_key = key.public_key().public_bytes(encoding=Encoding.PEM, format=PublicFormat.SubjectPublicKeyInfo).decode()
+        priv_key = key.private_bytes(encoding=Encoding.PEM, format=PrivateFormat.PKCS8, encryption_algorithm=NoEncryption()).decode()
 
         new_key = Key(
-            pub_key = clear_pub_key,
-            priv_key = priv_key,
-            )
+            pub_key = pub_key,
+            priv_key = priv_key
+        )
 
         key_session.add(new_key)
         key_session.commit()
 
         response = Response(
             data={
-                "pubKey": f'{clear_pub_key}'
+                "pubKey": f'{pub_key}'
             }
         )
 
@@ -69,3 +80,6 @@ async def get_key():
 
         return jsonify(ErrorResponse(
                     error = error).__dict__)
+
+def compress_point(point):
+    return hex(point.x) + hex(point.y % 2)[2:]

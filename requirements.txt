@@ -9,3 +9,6 @@ bcrypt
 cryptography
 pytz
 Pillow
+ecdsa
+tinyec
+cryptography

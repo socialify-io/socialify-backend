@@ -1,5 +1,7 @@
+from sys import byteorder
 from app import app, HTTP_METHODS, route, key_session, user_session
 from flask import render_template, request, jsonify
+import os
 
 # Database
 from db.keys_db_declarative import Key
@@ -13,6 +15,12 @@ from ...helpers.RSA_helper import decrypt_rsa
 # Crypto
 from Crypto.PublicKey import RSA
 import bcrypt
+import base64
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives import hashes
 
 # Datatime
 from datetime import datetime
@@ -61,10 +69,24 @@ async def new_device():
             return jsonify(ErrorResponse(
                 error=error).__dict__)
 
-        priv_key = RSA.importKey(priv_key)
+        priv_key = load_pem_private_key(bytes(priv_key, 'utf-8'), password=None)
+        client_pub_key = load_pem_public_key(bytes(body['clientPubKey'], 'utf-8'))
+        shared_key = priv_key.exchange(ec.ECDH(), client_pub_key)
+        derived_key = HKDF(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=None,
+            info=None,
 
+        ).derive(shared_key)
+
+        decrypt_key = AESGCM(derived_key)
+
+        nonce = [x.to_bytes(1, byteorder='big', signed=True) for x in body['nonce']]
+        nonce = b''.join(nonce)
+        
         try:
-            password = bytes(decrypt_rsa(body['password'], priv_key), 'utf-8')
+            password = decrypt_key.decrypt(nonce, base64.b64decode(body['password']), None)
 
         except:
             error = ApiError(
