@@ -30,10 +30,10 @@ def decrypt_rsa(encoded_msg, key):
     decoded_msg = encryptor.decrypt(decoded_encrypted_msg)
     return decoded_msg.decode()
 
-def verify_sign(request, key, endpoint):
+def verify_sign(request, pub_key, endpoint):
     headers = get_headers(request, with_device_id)
 
-    pub_key = key[0]
+    #pub_key = key[0]
     # pem_prefix = '-----BEGIN RSA PRIVATE KEY-----\n'
     # pem_suffix = '\n-----END RSA PRIVATE KEY-----'
     # pub_key = '{}{}{}'.format(pem_prefix, pub_key, pem_suffix)

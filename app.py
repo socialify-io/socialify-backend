@@ -25,33 +25,11 @@ route = f"/api/v{VERSION}"
 
 logging.basicConfig(filename=f'./logs/logs.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
-# Database
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from pymongo import MongoClient
 
-from db.keys_db_declarative import KeyBase
-from db.users_db_declarative import UserBase
-from db.error_reports_db_declarative import ErrorReportsBase
+CONNECTION_STRING = "mongodb://localhost/socialify"
+mongo_client = MongoClient(CONNECTION_STRING)['socialify']
 
-key_engine = create_engine('sqlite:///db/keys.db', connect_args={'check_same_thread': False})
-KeyBase.metadata.bind = key_engine
-
-key_DBSession = sessionmaker(bind=key_engine)
-key_session = key_DBSession()
-
-
-user_engine = create_engine('sqlite:///db/users.db', connect_args={'check_same_thread': False})
-UserBase.metadata.bind = user_engine
-
-user_DBSession = sessionmaker(bind=user_engine)
-user_session = user_DBSession()
-
-
-error_reports_engine = create_engine('sqlite:///db/error_reports.db', connect_args={'check_same_thread': False})
-ErrorReportsBase.metadata.bind = error_reports_engine
-
-error_reports_DBSession = sessionmaker(bind=error_reports_engine)
-error_reports_session = error_reports_DBSession()
 
 @app.errorhandler(400)
 def bad_request(e):

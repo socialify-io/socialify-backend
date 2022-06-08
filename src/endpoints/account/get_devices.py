@@ -1,8 +1,8 @@
-from app import app, HTTP_METHODS, route, user_session
+from app import app, HTTP_METHODS, route, mongo_client
 from flask import render_template, request, jsonify
 
 # Database
-from db.users_db_declarative import Device
+from bson.objectid import ObjectId
 
 # Helpers
 from ...helpers.get_headers import get_headers, with_device_id, without_device_id
@@ -38,20 +38,22 @@ async def get_devices():
         user_id = headers["UserId"]
         device_id = headers["DeviceId"]
 
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
+        #pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
+        pub_key = mongo_client.db.devices.find_one({"userId": ObjectId(user_id), "_id": ObjectId(device_id)})
 
         if verify_sign(request, pub_key, "getDevices"):
-            devices_db = user_session.query(Device).filter(Device.userId == user_id).all()
+            #devices_db = user_session.query(Device).filter(Device.userId == user_id).all()
+            devices_db = mongo_client.db.devices.find({"userId": ObjectId(user_id)})
             devices = []
 
             for device in devices_db:
                 device_json = {
-                    "deviceName": device.deviceName,
-                    "deviceIP": device.deviceIP,
-                    "os": device.os,
-                    "deviceCreationDate": device.timestamp,
-                    "deviceLastActive": device.last_active,
-                    "status": device.status
+                    "deviceName": device['deviceName'],
+                    "deviceIP": device['deviceIP'],
+                    "os": device['os'],
+                    "deviceCreationDate": device['timestamp'],
+                    "deviceLastActive": device['last_active'],
+                    "status": device['status']
                 }
                 devices.append(device_json)
 

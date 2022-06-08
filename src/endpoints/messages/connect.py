@@ -1,11 +1,11 @@
-from app import socketio, user_session
+from app import socketio, mongo_client
 from flask_socketio import emit
 from flask import request
 import json
 import hashlib
 
 # Database
-from db.users_db_declarative import User, Device
+from bson.objectid import ObjectId
 
 # Helpers
 from ...helpers.get_headers import get_headers, with_device_id, without_device_id
@@ -36,19 +36,23 @@ def connect():
         return
 
     if verify_authtoken(headers, 'connect'):
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == headers['UserId'], Device.id == headers['DeviceId']).one()
+        #pub_key = user_session.query(Device.pubKey).filter(Device.userId == headers['UserId'], Device.id == headers['DeviceId']).one()
+        pub_key = mongo_client.devices.find_one({"_id": ObjectId(headers['DeviceId'])})['pubKey']
 
         if verify_sign(request, pub_key, 'connect'):
-            user_session.query(Device).filter(Device.userId == headers['UserId']).filter(Device.id == headers['DeviceId']).update(dict(status=Status().Active))
+            #user_session.query(Device).filter(Device.userId == headers['UserId']).filter(Device.id == headers['DeviceId']).update(dict(status=Status().Active))
+            mongo_client.devices.update_one({"_id": ObjectId(headers['DeviceId'])}, {"$set": {"status": Status().Active}})
 
-            sids = json.loads(user_session.query(User.sids).filter(User.id ==
-                headers['UserId']).one()[0])
+            sids = json.loads(mongo_client.users.find_one({"_id": ObjectId(headers['UserId'])})['sids'])
+            #sids = json.loads(user_session.query(User.sids).filter(User.id ==
+            #    headers['UserId']).one()[0])
             sids.append(request.sid)
             sids = json.dumps(sids)
-            user_session.query(User).filter(User.id ==
-                    headers['UserId']).update({'sids': sids})
+            #user_session.query(User).filter(User.id ==
+            #        headers['UserId']).update({'sids': sids})
+            mongo_client.users.update_one({"_id": ObjectId(headers['UserId'])}, {"$set": {"sids": sids}})
 
-            user_session.commit()
+            #user_session.commit()
 
             print("CONECTED!!!!!!!")
 

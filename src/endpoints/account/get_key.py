@@ -1,8 +1,8 @@
-from app import app, HTTP_METHODS, route, key_session
+from app import app, HTTP_METHODS, route, mongo_client
 from flask import render_template, request, jsonify
 
 # Database
-from db.keys_db_declarative import Key
+# from db.users_db_declarative import LoginKey
 
 # Helpers
 from ...helpers.RSA_helper import generate_keys
@@ -56,13 +56,20 @@ async def get_key():
         pub_key = key.public_key().public_bytes(encoding=Encoding.PEM, format=PublicFormat.SubjectPublicKeyInfo).decode()
         priv_key = key.private_bytes(encoding=Encoding.PEM, format=PrivateFormat.PKCS8, encryption_algorithm=NoEncryption()).decode()
 
-        new_key = Key(
-            pub_key = pub_key,
-            priv_key = priv_key
-        )
+        # new_key = LoginKey(
+        #     pub_key = pub_key,
+        #     priv_key = priv_key
+        # )
 
-        key_session.add(new_key)
-        key_session.commit()
+        # key_session.add(new_key)
+        # key_session.commit()
+
+        new_key = {
+            'pub_key': pub_key,
+            'priv_key': priv_key
+        }
+
+        mongo_client.login_keys.insert_one(new_key)
 
         response = Response(
             data={

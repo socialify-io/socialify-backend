@@ -1,8 +1,8 @@
-from app import app, HTTP_METHODS, route, user_session
+from app import app, HTTP_METHODS, route, mongo_client
 from flask import render_template, request, jsonify
 
 # Database
-from db.users_db_declarative import Device
+from bson.objectid import ObjectId
 
 # Helpers
 from ...helpers.get_headers import get_headers, with_device_id, without_device_id
@@ -35,11 +35,13 @@ async def remove_device():
     if verify_authtoken(headers, "removeDevice"):
         user_id = headers['UserId']
         device_id = headers['DeviceId']
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
+        #pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
+        pub_key = mongo_client.db.devices.find_one({"userId": ObjectId(user_id), "_id": ObjectId(device_id)})
 
         if verify_sign(request, pub_key, "removeDevice"):
-            user_session.query(Device).filter(Device.id == device_id).delete()
-            user_session.commit()
+            # user_session.query(Device).filter(Device.id == device_id).delete()
+            # user_session.commit()
+            mongo_client.db.devices.delete_one({"_id": ObjectId(device_id)})
 
             return jsonify(Response(data={}).__dict__)
 

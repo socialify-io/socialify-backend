@@ -12,3 +12,5 @@ Pillow
 ecdsa
 tinyec
 cryptography
+dnspython
+pymongo

@@ -1,11 +1,7 @@
 from sys import byteorder
-from app import app, HTTP_METHODS, route, key_session, user_session
+from app import app, HTTP_METHODS, route, mongo_client
 from flask import render_template, request, jsonify
 import os
-
-# Database
-from db.keys_db_declarative import Key
-from db.users_db_declarative import User, Device
 
 # Helpers
 from ...helpers.get_headers import get_headers, with_device_id, without_device_id
@@ -57,8 +53,11 @@ async def new_device():
         pub_key_string = body['pubKey']
 
         try:
-            priv_key = key_session.query(Key).filter(Key.pub_key == pub_key_string).one()
-            priv_key = priv_key.priv_key
+            #priv_key = key_session.query(LoginKey).filter(LoginKey.pub_key == pub_key_string).one()
+            #priv_key = priv_key.priv_key
+            
+            priv_key = mongo_client.login_keys.find_one({'pub_key': pub_key_string})['priv_key']
+
 
         except:
             error = ApiError(
@@ -97,37 +96,57 @@ async def new_device():
             return jsonify(ErrorResponse(
                 error=error).__dict__)
 
-        usernames = user_session.query(User.username).all()
+        #usernames = user_session.query(User.username).all()
+        users = mongo_client.users.find()
+        usernames = [user['username'] for user in users]
 
-        if (body['username'],) in usernames:
-            db_password = user_session.query(User.password).filter(User.username == body['username']).one()
+        if body['username'] in usernames:
+            #db_password = user_session.query(User.password).filter(User.username == body['username']).one()
+            db_password = mongo_client.users.find_one({'username': body['username']})['password']
 
-            if bcrypt.checkpw(password, db_password[0]):
-                key_session.query(Key).filter(Key.pub_key==pub_key_string).delete()
-                key_session.commit()
+            if bcrypt.checkpw(password, db_password):
+                #key_session.query(LoginKey).filter(LoginKey.pub_key==pub_key_string).delete()
+                #key_session.commit()
+                mongo_client.login_keys.delete_one({'pub_key': pub_key_string})
 
-                user_id = user_session.query(User.id).filter(User.username ==
-                        body['username']).one()[0]
+                #user_id = user_session.query(User.id).filter(User.username ==
+                #        body['username']).one()[0]
+                user_id = mongo_client.users.find_one({'username': body['username']})['_id']
 
                 date = datetime.utcfromtimestamp(headers['Timestamp']).replace(tzinfo=pytz.utc)
 
-                new_device = Device(
-                    userId=user_id,
-                    appVersion=headers['AppVersion'],
-                    os=headers['OS'],
-                    pubKey=body['device']['signPubKey'],
-                    deviceName=body['device']['deviceName'],
-                    deviceIP=request.remote_addr,
-                    timestamp=date,
-                    last_active=date,
-                    status=Status().Inactive
-                )
+                # new_device = Device(
+                #     userId=user_id,
+                #     appVersion=headers['AppVersion'],
+                #     os=headers['OS'],
+                #     pubKey=body['device']['signPubKey'],
+                #     deviceName=body['device']['deviceName'],
+                #     deviceIP=request.remote_addr,
+                #     timestamp=date,
+                #     last_active=date,
+                #     status=Status().Inactive
+                # )
 
-                user_session.add(new_device)
-                user_session.flush()
-                device_id = new_device.id
+                #user_session.add(new_device)
+                #user_session.flush()
+                #device_id = new_device.id
 
-                user_session.commit()
+                #user_session.commit()
+
+                new_device = {
+                    'userId': user_id,
+                    'appVersion': headers['AppVersion'],
+                    'os': headers['OS'],
+                    'pubKey': body['device']['signPubKey'],
+                    'deviceName': body['device']['deviceName'],
+                    'deviceIP': request.remote_addr,
+                    'timestamp': date,
+                    'last_active': date,
+                    'status': Status().Inactive
+                }
+
+                mongo_client.devices.insert_one(new_device)
+                device_id = mongo_client.devices.find_one({'pubKey': body['device']['signPubKey']})['_id']
 
                 response = Response(
                     data = {

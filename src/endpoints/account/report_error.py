@@ -1,8 +1,8 @@
-from app import app, HTTP_METHODS, route, error_reports_session
+from app import app, HTTP_METHODS, route, mongo_client
 from flask import render_template, request, jsonify
 
 # Database
-from db.error_reports_db_declarative import ErrorReport
+from bson.objectid import ObjectId
 
 # Helpers
 from ...helpers.get_headers import get_headers, with_device_id, without_device_id
@@ -60,19 +60,30 @@ async def report_error():
 
         date = datetime.utcfromtimestamp(headers["Timestamp"]).replace(tzinfo=pytz.utc)
 
-        report = ErrorReport(
-                errorType = errorType,
-                errorContext = errorContext,
-                messageTitle = messageTitle,
-                message = message,
-                appVersion = headers["AppVersion"],
-                os = headers["OS"],
-                deviceIP = request.remote_addr,
-                timestamp = date
-            )
+        # report = ErrorReport(
+        #         errorType = errorType,
+        #         errorContext = errorContext,
+        #         messageTitle = messageTitle,
+        #         message = message,
+        #         appVersion = headers["AppVersion"],
+        #         os = headers["OS"],
+        #         deviceIP = request.remote_addr,
+        #         timestamp = date
+        #     )
 
-        error_reports_session.add(report)
-        error_reports_session.commit()
+        # error_reports_session.add(report)
+        # error_reports_session.commit()
+
+        mongo_client.db.error_reports.insert_one({
+            "errorType": errorType,
+            "errorContext": errorContext,
+            "messageTitle": messageTitle,
+            "message": message,
+            "appVersion": headers["AppVersion"],
+            "os": headers["OS"],
+            "deviceIP": request.remote_addr,
+            "timestamp": date
+        })
 
         return jsonify(Response(data={}).__dict__)
 

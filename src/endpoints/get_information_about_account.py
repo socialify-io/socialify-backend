@@ -1,9 +1,9 @@
-from app import app, socketio, HTTP_METHODS, route, user_session
+from app import app, socketio, HTTP_METHODS, route, mongo_client
 from flask import render_template, request, jsonify
 from flask_socketio import emit
 
 # Database
-from db.users_db_declarative import User
+from bson.objectid import ObjectId
 
 # Helpers
 from ..helpers.get_headers import get_headers, with_device_id, without_device_id
@@ -22,11 +22,12 @@ from models._status_codes import Status
 
 @socketio.event
 def get_information_about_account(id):
-    user = user_session.query(User).filter(User.id == id).one()
+    #user = user_session.query(User).filter(User.id == id).one()
+    user = mongo_client.users.find_one({"_id": ObjectId(id)})
 
     response = {
-        "username": str(user.username),
-        "id": str(user.id)
+        "username": str(user['username']),
+        "id": str(user['_id'])
     }
 
     emit('get_information_about_account', response, to=request.sid)
@@ -49,12 +50,13 @@ async def get_information_about_account_http():
         body = request.get_json(force=True)
         user_id = body['userId']
 
-        user = user_session.query(User).filter(User.id == user_id).one()
+        #user = user_session.query(User).filter(User.id == user_id).one()
+        user = mongo_client.users.find_one({"_id": ObjectId(user_id)})
 
         response = Response(
             data = {
-                "username": str(user.username),
-                "id": str(user.id)
+                "username": str(user['username']),
+                "id": str(user['_id'])
             }
         )
 

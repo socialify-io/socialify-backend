@@ -1,9 +1,9 @@
 from sqlalchemy.sql.functions import user
-from app import app, HTTP_METHODS, route, key_session, user_session
+from app import app, HTTP_METHODS, route, mongo_client 
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 
 # Database
-from db.users_db_declarative import Device, User
+from bson.objectid import ObjectId
 
 # Helpers
 from ...helpers.get_headers import get_headers, with_device_id, without_device_id
@@ -44,7 +44,8 @@ async def upload_avatar():
         user_id = headers["UserId"]
         device_id = headers["DeviceId"]
 
-        pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
+        #pub_key = user_session.query(Device.pubKey).filter(Device.userId == user_id, Device.id == device_id).one()
+        pub_key = mongo_client.db.devices.find_one({"userId": ObjectId(user_id), "_id": ObjectId(device_id)})
 
         if verify_sign(request, pub_key, 'uploadAvatar'):
             body = request.get_json(force=True)

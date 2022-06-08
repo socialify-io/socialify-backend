@@ -1,9 +1,5 @@
-from app import app, HTTP_METHODS, route, key_session, user_session
+from app import app, HTTP_METHODS, route, mongo_client
 from flask import Flask, render_template, request, jsonify
-
-# Database
-from db.keys_db_declarative import Key
-from db.users_db_declarative import User
 
 # Helpers
 from ...helpers.get_headers import get_headers, with_device_id, without_device_id
@@ -55,8 +51,10 @@ async def register():
         pub_key_string = body['pubKey']
 
         try:
-            priv_key = key_session.query(Key).filter(Key.pub_key == pub_key_string).one()
-            priv_key = priv_key.priv_key
+            #priv_key = key_session.query(LoginKey).filter(LoginKey.pub_key == pub_key_string).one()
+            #priv_key = priv_key.priv_key
+
+            priv_key = mongo_client.login_keys.find_one({'pub_key': pub_key_string})['priv_key']
 
         except TypeError:
             error = ApiError(
@@ -97,9 +95,10 @@ async def register():
             return jsonify(ErrorResponse(
                 error=error).__dict__)
 
-        users = user_session.query(User.username).all()
+        users = mongo_client.users.find()
+        usernames = [user['username'] for user in users]
 
-        if (body['username'],) in users:
+        if body['username'] in usernames:
             error = ApiError(
                 code = Error().InvalidUsername,
                 reason = 'This username is already taken.'
@@ -111,22 +110,29 @@ async def register():
         else:
             hashed_pass = bcrypt.hashpw(password, bcrypt.gensalt())
 
-            new_user = User(
-                username=body['username'],
-                password=hashed_pass,
-                sids='[]'
-            )
+            # new_user = User(
+            #     username=body['username'],
+            #     password=hashed_pass,
+            #     sids='[]'
+            # )
 
-            user_session.add(new_user)
-            user_session.flush()
+            # user_session.add(new_user)
+            # user_session.flush()
+
+            new_user = {
+                'username': body['username'],
+                'password': hashed_pass,
+                'sids': '[]'
+            }
+
+            mongo_client.users.insert_one(new_user)
+
+            new_user_id = mongo_client.users.find_one({'username': body['username']})['_id']
 
             f = Image.open(app.static_folder+ '/images/socialify-logo.png')
-            f.save(f'{os.path.join(app.config["AVATARS_FOLDER"])}{new_user.id}.png')
+            f.save(f'{os.path.join(app.config["AVATARS_FOLDER"])}{new_user_id}.png')
 
-            user_session.commit()
-
-            key_session.query(Key).filter(Key.pub_key==pub_key_string).delete()
-            key_session.commit()
+            mongo_client.login_keys.delete_one({'pub_key': pub_key_string})
 
             return jsonify(Response(data={}).__dict__)
         

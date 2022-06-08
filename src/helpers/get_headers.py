@@ -14,7 +14,7 @@ def get_headers(request, is_with_device_id):
     }
 
     if is_with_device_id:
-        headers.update({'DeviceId': request.headers['DeviceId'],
-                        'UserId': request.headers['UserId']})
+        headers.update({'DeviceId': str(request.headers['DeviceId']),
+                        'UserId': str(request.headers['UserId'])})
 
     return headers

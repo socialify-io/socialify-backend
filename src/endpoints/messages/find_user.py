@@ -1,11 +1,11 @@
-from app import socketio, user_session
+from app import socketio, mongo_client
 from flask_socketio import emit, send, join_room, leave_room
 from flask import request
 
 import hashlib
 
 # Database
-from db.users_db_declarative import Device, User
+from bson.objectid import ObjectId
 
 # Helpers
 from ...helpers.get_headers import get_headers, with_device_id, without_device_id
@@ -26,17 +26,19 @@ from models.errors.codes._error_codes import Error
 
 @socketio.event
 def find_user(phrase):
-    results = find_users_in_database(phrase)
+    results = find_users_in_database(phrase.lower())
     response = []
 
     headers = get_headers(request, with_device_id)
-    username = user_session.query(User.username).filter(User.id == headers["UserId"]).one()[0]
+    #username = user_session.query(User.username).filter(User.id == headers["UserId"]).one()[0]
+
+    #username = mongo_client.users.find_one({"_id": ObjectId(headers["UserId"])})["username"]
 
     for user in results:
-        if(user[1] != username):
+        if(user["_id"] != ObjectId(headers["UserId"])):
             json_model = {
-                'id': user[0],
-                'username': user[1]
+                'id': str(user['_id']),
+                'username': user['username']
             }
             response.append(json_model)
 
@@ -45,7 +47,8 @@ def find_user(phrase):
     emit('find_user', response)
 
 def find_users_in_database(phrase):
-    search = "%{}%".format(phrase)
-    results = user_session.query(User.id, User.username).filter(User.username.like(search)).all()
+    #search = /{}/.format(phrase)
+    #results = user_session.query(User.id, User.username).filter(User.username.like(search)).all()
+    results = mongo_client.users.find({"username": {"$regex": phrase}})
     return results
 
