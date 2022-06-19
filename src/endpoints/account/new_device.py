@@ -142,7 +142,8 @@ async def new_device():
                     'deviceIP': request.remote_addr,
                     'timestamp': date,
                     'last_active': date,
-                    'status': Status().Inactive
+                    'status': Status().Inactive,
+                    'public_e2e_key': body['device']['publicE2EKey']
                 }
 
                 mongo_client.devices.insert_one(new_device)

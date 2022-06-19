@@ -41,12 +41,12 @@ def send_dm(data):
     username = mongo_client.users.find_one({"_id": ObjectId(user_id)})["username"]
 
     receiver_id = data.pop('receiverId')
-    message = data.pop('message')
     media = data.pop('media')
+
+    messages = data['message']
 
     #sids = json.loads(user_session.query(User.sids).filter(User.id == receiver_id).one()[0])
     sids = json.loads(mongo_client.users.find_one({"_id": ObjectId(receiver_id)})["sids"])
-    sids.append(request.sid)
 
     # new_dm = DM(
     #     receiver = receiver_id,
@@ -58,10 +58,28 @@ def send_dm(data):
     # user_session.add(new_dm)
     # user_session.commit()
 
+    new_dm_messages = []
+
+    for message in messages:
+        nonce = message["nonce"]
+        tag = message["tag"]
+        ciphertext = message["ciphertext"]
+        device_id = message["receiverDeviceId"]
+
+        new_dm_for_device = {
+            "deviceId": device_id,
+            "nonce": nonce,
+            "tag": tag,
+            "ciphertext": ciphertext,
+        }
+
+        new_dm_messages.append(new_dm_for_device)
+
     new_dm = {
         "receiver": receiver_id,
         "sender": user_id,
-        "message": message,
+        "senderDeviceId": headers["DeviceId"],
+        "messages": new_dm_messages,
         "date": datetime.utcnow().replace(microsecond=0)
     }
 
@@ -113,15 +131,26 @@ def send_dm(data):
         'id': str(new_dm["_id"]),
         'receiverId': receiver_id,
         'senderId': user_id,
-        'message': message,
+        'deviceId': headers["DeviceId"],
+        'message': new_dm_messages,
         'username': username,
         'date': new_dm["date"].isoformat()+'Z',
-        'media': media_parsed
+        'media': media_parsed,
+        'senderNewPublicKey': data["newPublicKey"]
     }
 
     print(emit_model)
 
     emit('send_dm', emit_model, to=sids)
+    
+    confirmation_response = {
+        'confirmationId': data['confirmationId'],
+        'id': str(new_dm['_id']),
+        'date': new_dm["date"].isoformat()+'Z'
+    }   
+
+    emit("dm_confirmation", confirmation_response, to=request.sid)
+
 
 @socketio.event
 def fetch_last_unread_dms():
@@ -207,6 +236,33 @@ def fetch_dms(data):
     messages_json.sort(key= lambda i: i['id'])
 
     emit('fetch_dms', messages_json, to=request.sid)
+
+@socketio.event
+def get_public_e2e_key(data):
+    user_id = data['user']
+
+    keys = mongo_client.devices.find({"userId": ObjectId(user_id)})
+    response = []
+
+    for key in keys:
+        response.append({
+            "deviceId": str(key['_id']),
+            "publicKey": str(key['public_e2e_key'])
+        })
+
+    emit('get_public_e2e_key', response, to=request.sid)
+
+@socketio.event
+def update_public_e2e_key(data):
+    headers = get_headers(request, with_device_id)
+    user_id = headers["UserId"]
+    device_id = headers["DeviceId"]
+
+    public_key = data['key']
+    
+    mongo_client.devices.update_one({"userId": ObjectId(user_id), "deviceId": ObjectId(device_id)}, {"$set": {"publicKey": public_key}})
+
+    emit('update_public_e2e_key', {"success": True}, to=request.sid)
 
 @socketio.event
 def delete_dms(data):
