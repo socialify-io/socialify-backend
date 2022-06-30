@@ -80,7 +80,9 @@ def send_dm(data):
         "sender": user_id,
         "senderDeviceId": headers["DeviceId"],
         "messages": new_dm_messages,
-        "date": datetime.utcnow().replace(microsecond=0)
+        "date": datetime.utcnow().replace(microsecond=0),
+        "senderNewPublicKey": data["newPublicKey"],
+        "isRead": False
     }
 
     mongo_client.dms.insert_one(new_dm)
@@ -201,10 +203,9 @@ def fetch_dms(data):
 #    to_id = data.pop('to')
 
     #messages = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == sender, DM.is_read == False).order_by(DM.id.desc())
-    messages = mongo_client.dms.find({'receiver': ObjectId(user_id), 'sender': ObjectId(sender), 'is_read': False})
+    messages = mongo_client.dms.find({'receiver': user_id, 'sender': sender, 'isRead': False})
 
     messages_json = []
-
 
     for message in messages:
         #username = user_session.query(User.username).filter(User.id == message.sender).one()[0]
@@ -221,17 +222,20 @@ def fetch_dms(data):
             })
 
         message_json = {
-            'id': message['_id'],
+            'id': str(message['_id']),
+            'deviceId': message['senderDeviceId'],
             'username': username,
             'sender': message['sender'],
             'receiver': message['receiver'],
-            'message': message['message'],
+            'message': message['messages'],
+            'senderNewPublicKey': message['senderNewPublicKey'],
             'date': str(message['date'].isoformat()+'Z'),
-            'isRead': message['is_read'],
+            'isRead': message['isRead'],
             'media': media_parsed
         }
 
         messages_json.append(message_json)
+        mongo_client.dms.update_one({"_id": message['_id']}, {"$set": {"isRead": True}})
 
     messages_json.sort(key= lambda i: i['id'])
 
