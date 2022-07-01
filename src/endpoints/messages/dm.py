@@ -159,7 +159,7 @@ def fetch_last_unread_dms():
     headers = get_headers(request, with_device_id)
     user_id = headers["UserId"]
     #dms = user_session.query(DM).filter(DM.receiver == user_id, DM.is_read == False).all()
-    dms = mongo_client.dms.find({'receiver': ObjectId(user_id)})
+    dms = mongo_client.dms.find({'receiver': user_id})
     users_with_new_dms = []
     print(users_with_new_dms)
 
@@ -167,29 +167,47 @@ def fetch_last_unread_dms():
         if dm['sender'] in users_with_new_dms:
             pass
         else:
-            users_with_new_dms.append(dm.sender)
+            users_with_new_dms.append(dm['sender'])
 
     dms_json = []
     print(users_with_new_dms)
 
     for user in users_with_new_dms:
         #dm = user_session.query(DM).filter(DM.receiver == user_id, DM.sender == user).order_by(DM.id.desc()).first()
-        dm = mongo_client.dms.find_one({'receiver': ObjectId(user_id), 'sender': ObjectId(user)})
+        dm = list(mongo_client.dms.find({'receiver': user_id, 'sender': user}).sort([('_id', -1)]).limit(1))[0]
 
-        #username = user_session.query(User.username).filter(User.id == dm.sender).one()[0]
-        username = mongo_client.users.find_one({"_id": dm["sender"]})["username"]
+        if dm["isRead"] == False:
+            print(dm)
 
-        dm_json = {
-            'id': dm['_id'],
-            'sender': dm['sender'],
-            'username': username,
-            'receiver': dm['receiver'],
-            'message': dm['message'],
-            'date': str(dm['date'].isoformat()+'Z'),
-            'isRead': dm['is_read']
-        }
+            #username = user_session.query(User.username).filter(User.id == dm.sender).one()[0]
+            username = mongo_client.users.find_one({"_id": ObjectId(dm["sender"])})["username"]
 
-        dms_json.append(dm_json)
+            media = mongo_client.media.find({"dmId": ObjectId(dm["_id"])})
+
+            media_parsed = []
+
+            for media_element in media:
+                media_parsed.append({
+                    "mediaURL": media_element['mediaURL'],
+                    "type": media_element['type']
+                })
+
+            dm_json = {
+                'id': str(dm['_id']),
+                'deviceId': dm['senderDeviceId'],
+                'username': username,
+                'sender': dm['sender'],
+                'receiver': dm['receiver'],
+                'message': dm['messages'],
+                'senderNewPublicKey': dm['senderNewPublicKey'],
+                'date': str(dm['date'].isoformat()+'Z'),
+                'isRead': dm['isRead'],
+                'media': media_parsed
+            }
+
+            dms_json.append(dm_json)
+            mongo_client.dms.update_one({"_id": dm['_id']}, {"$set": {"isRead": True}})
+
     print(dms_json)
     emit('fetch_last_unread_dms', dms_json, to=request.sid)
 
