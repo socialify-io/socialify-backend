@@ -1,0 +1,77 @@
+// MongoDB Playground
+// Use Ctrl+Space inside a snippet or a string literal to trigger completions.
+
+const database = 'socialify';
+
+// Create a new database.
+use(database);
+
+// Create a new collection.
+db.createCollection('users');
+db.createCollection('devices');
+db.createCollection('friend_requests');
+db.createCollection('friendships');
+db.createCollection('dms');
+db.createCollection('groups')
+db.createCollection('rooms');
+//db.createCollection('room_roles');
+db.createCollection('group_members');
+db.createCollection('messages');
+//db.createCollection('media_types');
+db.createCollection('media');
+
+db.createCollection('login_keys');
+db.createCollection('error_reports');
+
+// db.room_roles.insertMany([
+//   {
+//     _id: 1,
+//     name: 'Owner',
+//     description: 'The owner of the room.',
+//   },
+//   {
+//     _id: 2,
+//     name: 'Member',
+//     description: 'A room member.',
+//   },
+// ]);
+
+// db.media_types.insertMany([
+//     {
+//         _id: 1,
+//         name: 'Image',
+//         description: 'An image.'
+//     }
+//     ]);
+// ])
+
+// The prototype form to create a regular collection:
+/* db.createCollection( <name>,
+  {
+    capped: <boolean>,
+    autoIndexId: <boolean>,
+    size: <number>,
+    max: <number>,
+    storageEngine: <document>,
+    validator: <document>,
+    validationLevel: <string>,
+    validationAction: <string>,
+    indexOptionDefaults: <document>,
+    viewOn: <string>,
+    pipeline: <pipeline>,
+    collation: <document>,
+    writeConcern: <document>
+  }
+) */
+
+// The prototype form to create a time-series collection:
+/* db.createCollection( <name>,
+  {
+    timeseries: {
+      timeField: <string>,
+      metaField: <string>,
+      granularity: <string>
+    },
+    expireAfterSeconds: <number>
+  }
+) */

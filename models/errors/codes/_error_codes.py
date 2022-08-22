@@ -18,5 +18,10 @@ class Error(object):
     InvalidAuthToken = 8
     InvalidHeaders = 9
     InvalidFingerprint = 10
-    InvalidSignature = 11
-    InvalidRequestPayload = 12
+    InvalidDeviceId = 11
+    InvalidSignature = 12
+    InvalidRequestPayload = 13
+
+    # Friends
+    InvalidNumberOfUsers = 14
+    InvalidAccept = 15

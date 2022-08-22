@@ -1,4 +1,7 @@
 from flask import Flask, render_template, jsonify
+from flask_socketio import SocketIO
+import logging
+import datetime
 
 # Models
 from models.errors._api_error import ApiError
@@ -8,38 +11,30 @@ from models.errors.codes._error_codes import Error
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
+MAX_BUFFER_SIZE = 50 * 1000 * 1000
+socketio = SocketIO(app, logger=False, engineio_logger=False, policy_server=False, manage_session=False, cors_allowed_origins="*", max_http_buffer_size=MAX_BUFFER_SIZE)
+
 HTTP_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH']
+
+AVATARS_FOLDER = 'static/avatars/'
+GROUPS_ICONS_FOLDER = 'static/groups_icons/'
+MEDIA_FOLDER = 'static/media/'
+
+app.config['AVATARS_FOLDER'] = AVATARS_FOLDER
+app.config['MEDIA_FOLDER'] = MEDIA_FOLDER
+app.config['GROUPS_ICONS_FOLDER'] = GROUPS_ICONS_FOLDER
 
 VERSION = 0.1
 route = f"/api/v{VERSION}"
+url = '192.168.8.199'
 
-# Database
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
- 
-from db.keys_db_declarative import KeyBase
-from db.users_db_declarative import UserBase
-from db.error_reports_db_declarative import ErrorReportsBase
+logging.basicConfig(filename=f'./logs/logs.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
-key_engine = create_engine('sqlite:///db/keys.db', connect_args={'check_same_thread': False})
-KeyBase.metadata.bind = key_engine
- 
-key_DBSession = sessionmaker(bind=key_engine)
-key_session = key_DBSession()
+from pymongo import MongoClient
 
+CONNECTION_STRING = "mongodb://localhost/socialify"
+mongo_client = MongoClient(CONNECTION_STRING)['socialify']
 
-user_engine = create_engine('sqlite:///db/users.db', connect_args={'check_same_thread': False})
-UserBase.metadata.bind = user_engine
- 
-user_DBSession = sessionmaker(bind=user_engine)
-user_session = user_DBSession()
-
-
-error_reports_engine = create_engine('sqlite:///db/error_reports.db', connect_args={'check_same_thread': False})
-ErrorReportsBase.metadata.bind = error_reports_engine
- 
-error_reports_DBSession = sessionmaker(bind=error_reports_engine)
-error_reports_session = error_reports_DBSession()
 
 @app.errorhandler(400)
 def bad_request(e):
@@ -49,7 +44,7 @@ def bad_request(e):
     ).__dict__
 
     return jsonify(ErrorResponse(
-        errors=[error]).__dict__)
+        error=error).__dict__)
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -63,7 +58,7 @@ def internal_server_error(e):
     ).__dict__
 
     return jsonify(ErrorResponse(
-        errors=[error]).__dict__)
+        error=error).__dict__)
 
 @app.after_request
 def add_header(response):
@@ -71,10 +66,11 @@ def add_header(response):
     return response
 
 # Endpoints
-from src.endpoints import get_key, register, get_devices
-from src.endpoints import new_device
-from src.endpoints import remove_device
-from src.endpoints import report_error
+from src.endpoints import get_information_about_account#, get_information_about_account_http
+from src.endpoints.friends import send_friend_request, fetch_pending_friends_requests, accept_friend_request, fetch_friends, remove_friend, get_mutual_friends
+from src.endpoints.account import get_key, register, get_devices, edit_account
+from src.endpoints.account import new_device
+from src.endpoints.account import remove_device
+from src.endpoints.account import report_error
 
-if __name__ == '__main__':
-    app.run()
+from src.endpoints.messages import connect, find_user, dm, groups, disconnect

@@ -1,4 +1,5 @@
 flask
+flask_socketio
 asgiref
 pytest
 pytest-flask
@@ -7,3 +8,9 @@ sqlalchemy
 bcrypt
 cryptography
 pytz
+Pillow
+ecdsa
+tinyec
+cryptography
+dnspython
+pymongo

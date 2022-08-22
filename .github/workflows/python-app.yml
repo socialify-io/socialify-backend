@@ -40,6 +40,13 @@ jobs:
       run: |
         pytest tests/test_account_register.py
         pytest tests/test_new_device.py
+        pytest tests/test_upload_avatar.py
         pytest tests/test_get_devices.py
+        pytest tests/test_get_information_about_account.py
+        pytest tests/test_friends_system.py
+
+        pytest tests/test_dms.py
+        pytest tests/test_rooms.py
+
         pytest tests/test_remove_device.py
         pytest tests/test_report_error.py

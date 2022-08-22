@@ -1,12 +1,12 @@
-from app import app, HTTP_METHODS, route, error_reports_session
+from app import app, HTTP_METHODS, route, mongo_client
 from flask import render_template, request, jsonify
 
 # Database
-from db.error_reports_db_declarative import ErrorReport
+from bson.objectid import ObjectId
 
 # Helpers
-from ..helpers.get_headers import get_headers, with_fingerprint, without_fingerprint
-from ..helpers.verify_authtoken import verify_authtoken
+from ...helpers.get_headers import get_headers, with_device_id, without_device_id
+from ...helpers.verify_authtoken import verify_authtoken
 
 # Datatime
 from datetime import datetime
@@ -21,22 +21,19 @@ from models.responses._response import Response
 from models.errors.codes._error_codes import Error
 
 
-@app.route(f'{route}/reportError', methods=HTTP_METHODS)
+@app.route(f'{route}/reportError', methods=['POST'])
 async def report_error():
-    if request.method != 'POST':
-        return render_template('what_are_you_looking_for.html')
-
     try:
-        headers = get_headers(request, without_fingerprint)
+        headers = get_headers(request, without_device_id)
 
     except:
         error = ApiError(
             code = Error().InvalidHeaders,
             reason = 'Some required request headers not found.'
         ).__dict__
-        
+
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
+                    error=error).__dict__)
 
     if verify_authtoken(headers, "reportError"):
         body = request.get_json(force=True)
@@ -63,19 +60,30 @@ async def report_error():
 
         date = datetime.utcfromtimestamp(headers["Timestamp"]).replace(tzinfo=pytz.utc)
 
-        report = ErrorReport(
-                errorType = errorType,
-                errorContext = errorContext,
-                messageTitle = messageTitle,
-                message = message,
-                appVersion = headers["AppVersion"],
-                os = headers["OS"],
-                deviceIP = request.remote_addr,
-                timestamp = date
-            )
+        # report = ErrorReport(
+        #         errorType = errorType,
+        #         errorContext = errorContext,
+        #         messageTitle = messageTitle,
+        #         message = message,
+        #         appVersion = headers["AppVersion"],
+        #         os = headers["OS"],
+        #         deviceIP = request.remote_addr,
+        #         timestamp = date
+        #     )
 
-        error_reports_session.add(report)
-        error_reports_session.commit()
+        # error_reports_session.add(report)
+        # error_reports_session.commit()
+
+        mongo_client.db.error_reports.insert_one({
+            "errorType": errorType,
+            "errorContext": errorContext,
+            "messageTitle": messageTitle,
+            "message": message,
+            "appVersion": headers["AppVersion"],
+            "os": headers["OS"],
+            "deviceIP": request.remote_addr,
+            "timestamp": date
+        })
 
         return jsonify(Response(data={}).__dict__)
 
@@ -86,5 +94,5 @@ async def report_error():
         ).__dict__
 
         return jsonify(ErrorResponse(
-                    errors = [error]).__dict__)
-                    
+                    error=error).__dict__)
+

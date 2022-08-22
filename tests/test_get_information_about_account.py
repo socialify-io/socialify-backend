@@ -10,10 +10,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import route, app
+from app import route, app, socketio
 
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA
+from Crypto.Signature import PKCS1_v1_5
 
 @pytest.fixture
 def client():
@@ -21,8 +22,24 @@ def client():
 
     yield client
 
+def test_get_information_about_account_http(client):
+    headers = get_headers('getInformationAboutAccount')
+    resp = client.get(
+        f'{route}/getInformationAboutAccount',
+        headers=headers,
+        json={"userId": 1}
+    )
 
-def test_get_devices(client):
+    json_resp = json.loads(resp.data.decode())
+
+    print(json_resp)
+
+    assert resp.status_code == 200
+    assert json_resp['data']['username'] == 'TestAccount123'
+
+websocket_client = None
+
+def test_connect():
     with open("tests/key.pem", "r") as f:
         priv_key_string = f.read()
 
@@ -31,8 +48,7 @@ def test_get_devices(client):
 
     priv_key = RSA.importKey(priv_key_string)
 
-    headers = get_headers("getDevices")
-
+    headers = get_headers('connect')
     headers.update({
         'UserId': ids["userId"],
         'DeviceId': ids["deviceId"]})
@@ -46,7 +62,7 @@ def test_get_devices(client):
         'body': '{}',
         'timestamp': str(headers['Timestamp']),
         'authToken': str(headers['AuthToken']),
-        'endpointUrl': f'{route}/getDevices'
+        'endpointUrl': f'{route}/connect'
     }
 
     for value in signature_json:
@@ -57,15 +73,17 @@ def test_get_devices(client):
     signature = base64.b64encode(signer.sign(digest))
     headers.update({'Signature': signature})
 
-    resp = client.get(
-        f'{route}/getDevices',
-        headers=headers,
-        json={}
-    )
+    print(signature)
 
-    json_resp = json.loads(resp.data.decode('utf8'))
+    global websocket_client
+    websocket_client = socketio.test_client(app, headers=headers)
 
-    print(json_resp)
+    assert websocket_client.is_connected()
 
-    assert resp.status_code == 200
-    assert json_resp['success'] == True
+def test_get_information_about_account():
+    websocket_client.emit('get_information_about_account', 1)
+    response = websocket_client.get_received()[1]['args'][0]
+
+    print(response)
+
+    assert response['username'] == 'TestAccount123'
