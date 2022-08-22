@@ -10,6 +10,7 @@ from ...helpers.RSA_helper import decrypt_rsa
 from Crypto.PublicKey import RSA
 import bcrypt
 import base64
+from Crypto.Hash import SHA
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -122,7 +123,8 @@ async def register():
             new_user = {
                 'username': body['username'],
                 'password': hashed_pass,
-                'sids': '[]'
+                'bio': '',
+                'sids': []
             }
 
             mongo_client.users.insert_one(new_user)

@@ -12,9 +12,10 @@ db.createCollection('devices');
 db.createCollection('friend_requests');
 db.createCollection('friendships');
 db.createCollection('dms');
+db.createCollection('groups')
 db.createCollection('rooms');
 //db.createCollection('room_roles');
-db.createCollection('room_members');
+db.createCollection('group_members');
 db.createCollection('messages');
 //db.createCollection('media_types');
 db.createCollection('media');

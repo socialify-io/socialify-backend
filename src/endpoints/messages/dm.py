@@ -1,4 +1,4 @@
-from app import app, route, socketio, mongo_client
+from app import app, route, socketio, mongo_client, AVATARS_FOLDER
 from flask_socketio import emit, send, join_room, leave_room
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import json
@@ -18,6 +18,7 @@ from bson.objectid import ObjectId
 
 # Crypto
 import base64
+from Crypto.Hash import SHA
 
 # Images
 from PIL import Image
@@ -40,13 +41,22 @@ def send_dm(data):
     #        user_id).one()[0]
     username = mongo_client.users.find_one({"_id": ObjectId(user_id)})["username"]
 
+    avatar_for_user = AVATARS_FOLDER + user_id + '.png'
+
+    user_avatar = ""
+
+    if os.path.isfile(avatar_for_user):
+        with open(avatar_for_user, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read())
+            user_avatar = encoded_string.decode('utf-8')
+
     receiver_id = data.pop('receiverId')
     media = data.pop('media')
 
     messages = data['message']
 
     #sids = json.loads(user_session.query(User.sids).filter(User.id == receiver_id).one()[0])
-    sids = json.loads(mongo_client.users.find_one({"_id": ObjectId(receiver_id)})["sids"])
+    sids = mongo_client.users.find_one({"_id": ObjectId(receiver_id)})["sids"]
 
     # new_dm = DM(
     #     receiver = receiver_id,
@@ -136,6 +146,7 @@ def send_dm(data):
         'deviceId': headers["DeviceId"],
         'message': new_dm_messages,
         'username': username,
+        'avatarHash': str(SHA.new(str(user_avatar).encode('utf-8')).hexdigest()),
         'date': new_dm["date"].isoformat()+'Z',
         'media': media_parsed,
         'senderNewPublicKey': data["newPublicKey"]
@@ -152,6 +163,56 @@ def send_dm(data):
     }   
 
     emit("dm_confirmation", confirmation_response, to=request.sid)
+
+@socketio.event
+def fetch_all_unread_dms():
+    headers = get_headers(request, with_device_id)
+    user_id = headers["UserId"]
+
+    dms = mongo_client.dms.find({"receiver": user_id, "isRead": False})
+    dms_parsed = []
+
+    for dm in dms:
+        #sender = user_session.query(User.username).filter(User.id == dm.sender).one()[0]
+        sender_username = mongo_client.users.find_one({"_id": ObjectId(dm["sender"])})["username"]
+        sender_avatar = ""
+
+        sender_avatar_for_user = AVATARS_FOLDER + dm["sender"] + '.png'
+
+        if os.path.isfile(sender_avatar_for_user):
+            with open(sender_avatar_for_user, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read())
+                sender_avatar = encoded_string.decode('utf-8')
+        else:
+            sender_avatar = ""
+
+        media = mongo_client.media.find({"dmId": ObjectId(dm["_id"])})
+
+        media_parsed = []
+
+        for media_element in media:
+            media_parsed.append({
+                "mediaURL": media_element['mediaURL'],
+                "type": media_element['type']
+            })
+
+        dm_parsed = {
+            'id': str(dm['_id']),
+            'deviceId': dm['senderDeviceId'],
+            'username': sender_username,
+            'sender': dm['sender'],
+            'receiver': dm['receiver'],
+            'message': dm['messages'],
+            'avatarHash': str(SHA.new(str(sender_avatar).encode('utf-8')).hexdigest()),
+            'senderNewPublicKey': dm['senderNewPublicKey'],
+            'date': str(dm['date'].isoformat()+'Z'),
+            'isRead': dm['isRead'],
+            'media': media_parsed
+        }
+
+        dms_parsed.append(dm_parsed)
+
+    emit('fetch_all_unread_dms', {'success': True, 'dms': dms_parsed}, to=request.sid)
 
 
 @socketio.event
@@ -182,6 +243,16 @@ def fetch_last_unread_dms():
             #username = user_session.query(User.username).filter(User.id == dm.sender).one()[0]
             username = mongo_client.users.find_one({"_id": ObjectId(dm["sender"])})["username"]
 
+            avatar_for_user = AVATARS_FOLDER + dm['sender'] + '.png'
+
+            user_avatar = ""
+
+            if os.path.isfile(avatar_for_user):
+                with open(avatar_for_user, "rb") as image_file:
+                    encoded_string = base64.b64encode(image_file.read())
+                    user_avatar = encoded_string.decode('utf-8')
+
+
             media = mongo_client.media.find({"dmId": ObjectId(dm["_id"])})
 
             media_parsed = []
@@ -199,6 +270,7 @@ def fetch_last_unread_dms():
                 'sender': dm['sender'],
                 'receiver': dm['receiver'],
                 'message': dm['messages'],
+                'avatarHash': str(SHA.new(str(user_avatar).encode('utf-8')).hexdigest()),
                 'senderNewPublicKey': dm['senderNewPublicKey'],
                 'date': str(dm['date'].isoformat()+'Z'),
                 'isRead': dm['isRead'],
@@ -229,6 +301,17 @@ def fetch_dms(data):
         #username = user_session.query(User.username).filter(User.id == message.sender).one()[0]
         #media = user_session.query(Media).filter(message.id == Media.dmId).all()
         username = mongo_client.users.find_one({"_id": ObjectId(message["sender"])})["username"]
+
+        avatar_for_user = AVATARS_FOLDER + message['sender'] + '.png'
+
+        user_avatar = ""
+
+        if os.path.isfile(avatar_for_user):
+            with open(avatar_for_user, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read())
+                user_avatar = encoded_string.decode('utf-8')
+
+
         media = mongo_client.media.find({"dmId": ObjectId(message["_id"])})
 
         media_parsed = []
@@ -246,6 +329,7 @@ def fetch_dms(data):
             'sender': message['sender'],
             'receiver': message['receiver'],
             'message': message['messages'],
+            'avatarHash': str(SHA.new(str(user_avatar).encode('utf-8')).hexdigest()),
             'senderNewPublicKey': message['senderNewPublicKey'],
             'date': str(message['date'].isoformat()+'Z'),
             'isRead': message['isRead'],

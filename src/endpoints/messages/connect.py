@@ -43,11 +43,10 @@ def connect():
             #user_session.query(Device).filter(Device.userId == headers['UserId']).filter(Device.id == headers['DeviceId']).update(dict(status=Status().Active))
             mongo_client.devices.update_one({"_id": ObjectId(headers['DeviceId'])}, {"$set": {"status": Status().Active}})
 
-            sids = json.loads(mongo_client.users.find_one({"_id": ObjectId(headers['UserId'])})['sids'])
+            sids = mongo_client.users.find_one({"_id": ObjectId(headers['UserId'])})['sids']
             #sids = json.loads(user_session.query(User.sids).filter(User.id ==
             #    headers['UserId']).one()[0])
             sids.append(request.sid)
-            sids = json.dumps(sids)
             #user_session.query(User).filter(User.id ==
             #        headers['UserId']).update({'sids': sids})
             mongo_client.users.update_one({"_id": ObjectId(headers['UserId'])}, {"$set": {"sids": sids}})

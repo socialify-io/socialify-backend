@@ -28,7 +28,7 @@ def test_connect():
     headers = get_headers('connect')
 
     headers.update({
-        'Fingerprint': hashlib.sha1(bytes(priv_key_string, 'utf-8')).hexdigest(),
+        'Fingerprint': hashlib.invite(bytes(priv_key_string, 'utf-8')).hexdigest(),
         'DeviceId': id})
 
     mapped_headers = ''

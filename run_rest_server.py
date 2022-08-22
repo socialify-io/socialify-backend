@@ -1,4 +1,4 @@
-from app import app
+from app import app, url
 
 if __name__ == '__main__':
-    app.run('192.168.8.199', '80', debug=True)
+    app.run(url, '80', debug=True)

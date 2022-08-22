@@ -136,3 +136,4 @@ tests/*.pem
 tests/*.txt
 static/media/*.png
 static/avatars/*.png
+static/groups_icons/*.png
