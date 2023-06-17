@@ -5,8 +5,11 @@ from fastapi.responses import JSONResponse
 
 from src.exceptions import APIException
 from src.models.error import APIError
+from src.routers.account_manager import router as account_manager_router
 
 app: FastAPI = FastAPI(title="Socialify API", version="0.2.0")
+
+app.include_router(account_manager_router)
 
 templates: Jinja2Templates = Jinja2Templates(directory="templates")
 
@@ -37,7 +40,9 @@ def internal_server_error_exception_handler(request: Request, exc) -> JSONRespon
 
 
 @app.exception_handler(RequestValidationError)
-def request_validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+def request_validation_error(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     return JSONResponse(
         status_code=422,
         content=APIError(code="request_validation_error", message=exc.errors()).dict(),
