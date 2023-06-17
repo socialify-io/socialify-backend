@@ -1,8 +1,9 @@
 import requests
-from fastapi import APIRouter, Body, Request, Response
+from fastapi import APIRouter, Body, Request, Response, Depends
 from pydantic import BaseModel, Field, EmailStr
 
 from src.db.documents.account import AccountGender, AccountDocument
+from src.db.documents.session import SessionDocument
 from src.exceptions import APIException
 from src.models.account_manager.account_info import AccountInfo
 from src.services.account import AccountService
@@ -51,3 +52,8 @@ def log_in(request: Request, response: Response, login: str = Body(min_length=5,
     account: AccountDocument = AccountService.authenticate(login, password)
     SessionService.create(request, response, account)
     return AccountInfo.build(account)
+
+@router.post("/log-out")
+def log_out(response: Response, session: SessionDocument = Depends(SessionService.get_required)) -> None:
+    SessionService.delete(response, session)
+

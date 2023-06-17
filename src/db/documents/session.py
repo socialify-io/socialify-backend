@@ -9,6 +9,7 @@ class SessionDocument(Document):
     user_agent: str = StringField(db_field="userAgent")
     account_id: str = ObjectIdField(db_field="accountId")
     created_at: datetime = DateTimeField(db_field="createdAt")
-    expire_at: datetime = DateTimeField(db_field="expireAt")
+    expires_at: datetime = DateTimeField(db_field="expiresAt")
     last_validation_date: datetime = DateTimeField(db_field="lastValidationDate")
     last_active_date: datetime = DateTimeField(db_field="lastActiveDate")
+    meta = {"collection": "session"}
