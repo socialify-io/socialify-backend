@@ -1,3 +1,4 @@
+import mongoengine
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.templating import Jinja2Templates
@@ -12,6 +13,7 @@ app: FastAPI = FastAPI(title="Socialify API", version="0.2.0")
 app.include_router(account_manager_router)
 
 templates: Jinja2Templates = Jinja2Templates(directory="templates")
+mongoengine.connect("socialify-me")
 
 
 @app.exception_handler(404)
