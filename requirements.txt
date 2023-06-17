@@ -1,9 +1,2 @@
-flask
-asgiref
-pytest
-pytest-flask
-PyCryptodome
-sqlalchemy
-bcrypt
-cryptography
-pytz
+uvicorn~=0.22.0
+fastapi~=0.95.1
