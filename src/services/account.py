@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 import bcrypt
 
@@ -36,3 +37,34 @@ class AccountService:
             created_at=now,
             last_username_change_date=now,
         ).save()
+
+    @staticmethod
+    def authenticate(login: str, password: str) -> AccountDocument:
+        account: AccountDocument = AccountService.get_by_username_or_email_address(
+            login
+        )
+        AccountService.verify_password(account, password)
+        return account
+
+    @staticmethod
+    def get_by_username_or_email_address(login: str) -> AccountDocument:
+        account: Optional[AccountDocument] = AccountDocument.objects(
+            username=login
+        ).first()
+        if account:
+            return account
+        account: Optional[AccountDocument] = AccountDocument.objects(
+            email_address=login
+        ).first()
+        if not account:
+            raise APIException(
+                401, "incorrect_credentials", "username or password is incorrect"
+            )
+        return account
+
+    @staticmethod
+    def verify_password(account: AccountDocument, password: str) -> None:
+        if not bcrypt.checkpw(password.encode(), account.hashed_password.encode()):
+            raise APIException(
+                401, "incorrect_credentials", "username or password is incorrect"
+            )

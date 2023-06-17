@@ -1,15 +1,17 @@
 import requests
-from fastapi import APIRouter
+from fastapi import APIRouter, Body, Request, Response
 from pydantic import BaseModel, Field, EmailStr
 
-from src.db.documents.account import AccountGender
+from src.db.documents.account import AccountGender, AccountDocument
 from src.exceptions import APIException
+from src.models.account_manager.account_info import AccountInfo
 from src.services.account import AccountService
+from src.services.session import SessionService
 
 HCAPTCHA_VERIFY_URL: str = "https://hcaptcha.com/siteverify"
 HCAPTCHA_SECRET_KEY: str = "0x0000000000000000000000000000000000000000"
 
-router: APIRouter = APIRouter(prefix="/account/v1", tags=["accountmanager.account.v1"])
+router: APIRouter = APIRouter(prefix="/account/v1", tags=["account-manager.account.v1"])
 
 
 def verify_hcaptcha_response(response: str) -> None:
@@ -42,3 +44,10 @@ def create_new_account(payload: CreateNewAccountPayload) -> None:
         payload.last_name.strip(),
         payload.gender,
     )
+
+@router.post("/log-in")
+def log_in(request: Request, response: Response, login: str = Body(min_length=5, max_length=20),
+           password: str = Body(min_length=10)) -> AccountInfo:
+    account: AccountDocument = AccountService.authenticate(login, password)
+    SessionService.create(request, response, account)
+    return AccountInfo.build(account)
