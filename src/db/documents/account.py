@@ -26,3 +26,4 @@ class AccountDocument(Document):
     last_username_change_date: datetime = DateTimeField(
         db_field="lastUsernameChangeDate"
     )
+    meta = {"collection": "account"}
