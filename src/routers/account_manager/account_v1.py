@@ -2,18 +2,23 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import requests
-from fastapi import APIRouter, Body, Request, Response, Depends
-from pydantic import BaseModel, Field, EmailStr
+from fastapi import APIRouter, Body, Request, Response, Depends, UploadFile, File
 
-from src.db.documents.account import AccountGender, AccountDocument
+from src.db.documents.account import AccountDocument
 from src.db.documents.session import SessionDocument
 from src.exceptions import APIException
-from src.models.account_manager.account_info import AccountInfo
+from src.models.account_manager.account_v1 import (
+    AccountInfo,
+    CreateNewAccountPayload,
+    UpdateAccountPayload,
+)
 from src.services.account import AccountService
 from src.services.session import SessionService
 
 HCAPTCHA_VERIFY_URL: str = "https://hcaptcha.com/siteverify"
 HCAPTCHA_SECRET_KEY: str = "0x0000000000000000000000000000000000000000"
+
+SUPPORTED_AVATAR_MEDIA_TYPES: list[str] = ["image/jpeg", "image/png", "image/gif"]
 
 router: APIRouter = APIRouter(prefix="/account/v1", tags=["account-manager.account.v1"])
 
@@ -27,24 +32,6 @@ def verify_hcaptcha_response(response: str) -> None:
         raise APIException(
             400, "unsuccessful_hcaptcha_response", "hCaptcha verification failed"
         )
-
-
-class CreateNewAccountPayload(BaseModel):
-    username: str = Field(min_length=5, max_length=20)
-    email_address: EmailStr = Field(alias="emailAddress")
-    password: str = Field(min_length=10)
-    name: str
-    last_name: str = Field(alias="lastName")
-    gender: AccountGender
-    hcaptcha_response: str = Field(alias="hcaptchaResponse")
-
-
-class UpdateAccountPayload(BaseModel):
-    username: Optional[str] = Field(min_length=5, max_length=20, default=None)
-    password: Optional[str] = Field(min_length=10, default=None)
-    name: Optional[str] = None
-    last_name: Optional[str] = Field(alias="lastName", default=None)
-    gender: Optional[AccountGender] = None
 
 
 @router.post("", status_code=201)
@@ -129,9 +116,46 @@ def log_out(
 ) -> None:
     SessionService.delete(response, session)
 
+
 @router.post("/confirm-identity")
 def confirm_identity(
-        password: str = Body(min_length=10), session: SessionDocument = Depends(SessionService.get_required)) -> None:
+    password: str = Body(min_length=10),
+    session: SessionDocument = Depends(SessionService.get_required),
+) -> None:
     account: AccountDocument = AccountService.get_by_session(session)
     AccountService.verify_password(account, password)
     session.update(last_validation_date=datetime.utcnow())
+
+
+@router.get("/avatar")
+def get_account_avatar(session: SessionDocument = Depends(SessionService.get_required)):
+    account: AccountDocument = AccountService.get_by_session(session)
+    if not bool(account.avatar):
+        raise APIException(400, "account_without_avatar", "The account has not avatar")
+    return Response(account.avatar.read(), media_type=account.avatar.content_type)
+
+
+@router.put("/avatar")
+async def change_account_avatar(
+    file: UploadFile = File(),
+    session: SessionDocument = Depends(SessionService.get_required),
+) -> None:
+    account: AccountDocument = AccountService.get_by_session(session)
+    if file.size > 6291456:
+        raise APIException(400, "too_big_size", "The avatar can weigh up to 6mb")
+    if file.content_type not in SUPPORTED_AVATAR_MEDIA_TYPES:
+        raise APIException(415, "unsupported_media_type", "Unsupported Media Type")
+    request_object_content = await file.read()
+    if account.avatar:
+        account.avatar.delete()
+    account.avatar.put(request_object_content, content_type=file.content_type)
+    account.save()
+
+
+@router.delete("/avatar")
+async def delete_account_avatar(
+    session: SessionDocument = Depends(SessionService.get_required),
+) -> None:
+    account: AccountDocument = AccountService.get_by_session(session)
+    account.avatar.delete()
+    account.save()
