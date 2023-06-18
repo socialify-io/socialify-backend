@@ -4,8 +4,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse
 
-from src.exceptions import APIException
-from src.models.error import APIError
+from src.exceptions import APIException, OAuth2Exception
+from src.models.error import APIError, OAuth2Error
 from src.routers.account_manager import router as account_manager_router
 
 app: FastAPI = FastAPI(title="Socialify API", version="0.2.0")
@@ -56,4 +56,14 @@ def api_exception_handler(request: Request, exc: APIException) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content=APIError(code=exc.code, message=exc.message).dict(),
+    )
+
+
+@app.exception_handler(OAuth2Exception)
+def oauth2_exception_handler(request: Request, exc: OAuth2Exception):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=OAuth2Error(
+            error_code=exc.code, error_description=exc.description
+        ).dict(),
     )
