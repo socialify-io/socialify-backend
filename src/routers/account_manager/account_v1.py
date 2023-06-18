@@ -46,6 +46,11 @@ def create_new_account(payload: CreateNewAccountPayload) -> None:
         payload.gender,
     )
 
+@router.get("")
+def get_account_info(session: SessionDocument = Depends(SessionService.get_required)) -> AccountInfo:
+    account: AccountDocument = AccountService.get_by_session(session)
+    return AccountInfo.build(account)
+
 @router.post("/log-in")
 def log_in(request: Request, response: Response, login: str = Body(min_length=5, max_length=20),
            password: str = Body(min_length=10)) -> AccountInfo:

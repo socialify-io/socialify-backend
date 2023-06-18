@@ -4,6 +4,7 @@ from typing import Optional
 import bcrypt
 
 from src.db.documents.account import AccountGender, AccountDocument
+from src.db.documents.session import SessionDocument
 from src.exceptions import APIException
 
 
@@ -68,3 +69,14 @@ class AccountService:
             raise APIException(
                 401, "incorrect_credentials", "username or password is incorrect"
             )
+
+    @staticmethod
+    def get_by_session(session: SessionDocument) -> AccountDocument:
+        account: Optional[AccountDocument] = AccountDocument.objects(id=session.account_id).first()
+        if not account:
+            raise APIException(
+                401,
+                "invalid_session",
+                "The session is assigned to an account that doesn't exist",
+            )
+        return account
