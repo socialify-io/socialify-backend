@@ -23,7 +23,7 @@ class AccountInfo(BaseModel):
             name=account.name,
             last_name=account.last_name,
             gender=account.gender,
-            created_at=account.created_at
+            created_at=account.created_at,
         )
 
     class Config:

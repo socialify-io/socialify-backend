@@ -72,7 +72,9 @@ class AccountService:
 
     @staticmethod
     def get_by_session(session: SessionDocument) -> AccountDocument:
-        account: Optional[AccountDocument] = AccountDocument.objects(id=session.account_id).first()
+        account: Optional[AccountDocument] = AccountDocument.objects(
+            id=session.account_id
+        ).first()
         if not account:
             raise APIException(
                 401,
@@ -80,3 +82,10 @@ class AccountService:
                 "The session is assigned to an account that doesn't exist",
             )
         return account
+
+    @staticmethod
+    def change_password(account: AccountDocument, password: str) -> None:
+        hashed_password: str = bcrypt.hashpw(
+            password.encode(), bcrypt.gensalt()
+        ).decode()
+        account.modify(hashed_password=hashed_password)

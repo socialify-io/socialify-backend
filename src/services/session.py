@@ -11,7 +11,9 @@ from src.exceptions import APIException
 
 class SessionService:
     @staticmethod
-    def create(request: Request, response: Response, account: AccountDocument) -> SessionDocument:
+    def create(
+        request: Request, response: Response, account: AccountDocument
+    ) -> SessionDocument:
         while True:
             session_id = nanoid.generate(size=96)
             if not SessionDocument.objects(id=session_id):
@@ -34,7 +36,9 @@ class SessionService:
     @staticmethod
     def get_required(request: Request) -> SessionDocument:
         session_id = request.cookies.get("socialify.session")
-        session: Optional[SessionDocument] = SessionDocument.objects(id=session_id).first()
+        session: Optional[SessionDocument] = SessionDocument.objects(
+            id=session_id
+        ).first()
         if session and datetime.utcnow() < session.expires_at:
             expires_at: datetime = datetime.utcnow() + timedelta(hours=12)
             session.update(expires_at=expires_at, last_active_date=datetime.utcnow())
@@ -42,6 +46,17 @@ class SessionService:
         raise APIException(
             401, "unauthorized", "The session does not exist or has expired"
         )
+
+    @staticmethod
+    def get_optional(request: Request) -> Optional[SessionDocument]:
+        session_id = request.cookies.get("socialify.session")
+        session: Optional[SessionDocument] = SessionDocument.objects(
+            id=session_id
+        ).first()
+        if session and datetime.utcnow() < session.expires_at:
+            expires_at: datetime = datetime.utcnow() + timedelta(hours=12)
+            session.update(expires_at=expires_at, last_active_date=datetime.utcnow())
+            return session
 
     @staticmethod
     def delete(response: Response, session: SessionDocument) -> None:

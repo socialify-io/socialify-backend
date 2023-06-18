@@ -1,3 +1,5 @@
+from typing import Optional
+
 import requests
 from fastapi import APIRouter, Body, Request, Response, Depends
 from pydantic import BaseModel, Field, EmailStr
@@ -21,7 +23,9 @@ def verify_hcaptcha_response(response: str) -> None:
         data={"secret": HCAPTCHA_SECRET_KEY, "response": response},
     )
     if not response.json()["success"]:
-        raise APIException(400, "unsuccessful_hcaptcha_response", "hCaptcha verification failed")
+        raise APIException(
+            400, "unsuccessful_hcaptcha_response", "hCaptcha verification failed"
+        )
 
 
 class CreateNewAccountPayload(BaseModel):
@@ -34,8 +38,22 @@ class CreateNewAccountPayload(BaseModel):
     hcaptcha_response: str = Field(alias="hcaptchaResponse")
 
 
+class UpdateAccountPayload(BaseModel):
+    username: Optional[str] = Field(min_length=5, max_length=20, default=None)
+    password: Optional[str] = Field(min_length=10, default=None)
+    name: Optional[str] = None
+    last_name: Optional[str] = Field(alias="lastName", default=None)
+    gender: Optional[AccountGender] = None
+
+
 @router.post("", status_code=201)
-def create_new_account(payload: CreateNewAccountPayload) -> None:
+def create_new_account(
+    response: Response,
+    payload: CreateNewAccountPayload,
+    session: Optional[SessionDocument] = Depends(SessionService.get_optional),
+) -> None:
+    if session:
+        SessionService.delete(response, session)
     verify_hcaptcha_response(payload.hcaptcha_response)
     AccountService.create(
         payload.username.strip(),
@@ -46,19 +64,58 @@ def create_new_account(payload: CreateNewAccountPayload) -> None:
         payload.gender,
     )
 
+
 @router.get("")
-def get_account_info(session: SessionDocument = Depends(SessionService.get_required)) -> AccountInfo:
+def get_account_info(
+    session: SessionDocument = Depends(SessionService.get_required),
+) -> AccountInfo:
     account: AccountDocument = AccountService.get_by_session(session)
     return AccountInfo.build(account)
 
+
+@router.patch("")
+def update_account(
+    payload: UpdateAccountPayload,
+    session: SessionDocument = Depends(SessionService.get_required),
+) -> AccountInfo:
+    account: AccountDocument = AccountService.get_by_session(session)
+    if payload.username:
+        account.update(username=payload.username.strip())
+    if payload.password:
+        AccountService.change_password(account, payload.password)
+    if payload.name:
+        account.update(name=payload.name.strip())
+    if payload.last_name:
+        account.update(last_name=payload.last_name.strip())
+    if payload.gender:
+        account.update(gender=payload.gender)
+    return AccountInfo.build(account.reload())
+
+
+@router.delete("")
+def delete_account(
+    response: Response, session: SessionDocument = Depends(SessionService.get_required)
+) -> None:
+    account: AccountDocument = AccountService.get_by_session(session)
+    SessionService.delete(response, session)
+    [session.delete() for session in SessionDocument.objects(account_id=account.id)]
+    account.delete()
+
+
 @router.post("/log-in")
-def log_in(request: Request, response: Response, login: str = Body(min_length=5, max_length=20),
-           password: str = Body(min_length=10)) -> AccountInfo:
+def log_in(
+    request: Request,
+    response: Response,
+    login: str = Body(min_length=5, max_length=20),
+    password: str = Body(min_length=10),
+) -> AccountInfo:
     account: AccountDocument = AccountService.authenticate(login, password)
     SessionService.create(request, response, account)
     return AccountInfo.build(account)
 
-@router.post("/log-out")
-def log_out(response: Response, session: SessionDocument = Depends(SessionService.get_required)) -> None:
-    SessionService.delete(response, session)
 
+@router.post("/log-out")
+def log_out(
+    response: Response, session: SessionDocument = Depends(SessionService.get_required)
+) -> None:
+    SessionService.delete(response, session)
