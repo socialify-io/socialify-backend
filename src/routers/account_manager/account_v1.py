@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Optional
 
 import requests
@@ -79,10 +80,14 @@ def update_account(
     session: SessionDocument = Depends(SessionService.get_required),
 ) -> AccountInfo:
     account: AccountDocument = AccountService.get_by_session(session)
+    if payload.password:
+        if datetime.utcnow() > session.last_validation_date + timedelta(minutes=5):
+            raise APIException(
+                401, "confirm_identity_required", "Confirm identity is required"
+            )
+        AccountService.change_password(account, payload.password)
     if payload.username:
         account.update(username=payload.username.strip())
-    if payload.password:
-        AccountService.change_password(account, payload.password)
     if payload.name:
         account.update(name=payload.name.strip())
     if payload.last_name:
@@ -97,6 +102,10 @@ def delete_account(
     response: Response, session: SessionDocument = Depends(SessionService.get_required)
 ) -> None:
     account: AccountDocument = AccountService.get_by_session(session)
+    if datetime.utcnow() > session.last_validation_date + timedelta(minutes=5):
+        raise APIException(
+            401, "confirm_identity_required", "Confirm identity is required"
+        )
     SessionService.delete(response, session)
     [session.delete() for session in SessionDocument.objects(account_id=account.id)]
     account.delete()
@@ -119,3 +128,10 @@ def log_out(
     response: Response, session: SessionDocument = Depends(SessionService.get_required)
 ) -> None:
     SessionService.delete(response, session)
+
+@router.post("/confirm-identity")
+def confirm_identity(
+        password: str = Body(min_length=10), session: SessionDocument = Depends(SessionService.get_required)) -> None:
+    account: AccountDocument = AccountService.get_by_session(session)
+    AccountService.verify_password(account, password)
+    session.update(last_validation_date=datetime.utcnow())
