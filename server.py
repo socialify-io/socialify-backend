@@ -7,10 +7,12 @@ from fastapi.responses import JSONResponse
 from src.exceptions import APIException, OAuth2Exception
 from src.models.error import APIError, OAuth2Error
 from src.routers.account_manager import router as account_manager_router
+from src.routers.api import router as api_router
 
 app: FastAPI = FastAPI(title="Socialify API", version="0.2.0")
 
 app.include_router(account_manager_router)
+app.include_router(api_router)
 
 templates: Jinja2Templates = Jinja2Templates(directory="templates")
 mongoengine.connect("socialify-me")

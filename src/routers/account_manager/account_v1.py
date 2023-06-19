@@ -98,35 +98,6 @@ def delete_account(
     account.delete()
 
 
-@router.post("/log-in")
-def log_in(
-    request: Request,
-    response: Response,
-    login: str = Body(min_length=5, max_length=20),
-    password: str = Body(min_length=10),
-) -> AccountInfo:
-    account: AccountDocument = AccountService.authenticate(login, password)
-    SessionService.create(request, response, account)
-    return AccountInfo.build(account)
-
-
-@router.post("/log-out")
-def log_out(
-    response: Response, session: SessionDocument = Depends(SessionService.get_required)
-) -> None:
-    SessionService.delete(response, session)
-
-
-@router.post("/confirm-identity")
-def confirm_identity(
-    password: str = Body(min_length=10),
-    session: SessionDocument = Depends(SessionService.get_required),
-) -> None:
-    account: AccountDocument = AccountService.get_by_session(session)
-    AccountService.verify_password(account, password)
-    session.update(last_validation_date=datetime.utcnow())
-
-
 @router.get("/avatar")
 def get_account_avatar(session: SessionDocument = Depends(SessionService.get_required)):
     account: AccountDocument = AccountService.get_by_session(session)

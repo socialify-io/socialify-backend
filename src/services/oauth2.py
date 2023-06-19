@@ -27,9 +27,9 @@ class OAuth2Service:
                 account_id=account.id,
                 client_id=client.id,
                 issued_at=now,
-                expire_at=now + timedelta(minutes=2),
+                expires_at=now + timedelta(minutes=2),
                 redirect_uri=redirect_uri,
                 issuer="me.socialify.oauth2",
-            )
+            ).save()
         )
         return authorization_code
