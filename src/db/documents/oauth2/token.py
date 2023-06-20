@@ -8,8 +8,8 @@ class OAuth2AccessTokenDocument(Document):
     issuer: str = StringField()
     audience: str = ObjectIdField()
     subject: str = ObjectIdField()
-    issued_at: datetime = DateTimeField(alias="issuedAt")
-    expires_in: datetime = DateTimeField(alias="expiresIn")
+    issued_at: datetime = DateTimeField(db_field="issuedAt")
+    expires_in: datetime = DateTimeField(db_field="expiresIn")
     scopes: list[str] = ListField(StringField())
     meta = {"collection": "oauth2-access-token"}
 
@@ -17,5 +17,5 @@ class OAuth2AccessTokenDocument(Document):
 class OAuth2RefreshTokenDocument(Document):
     value: str = StringField()
     issuer: str = StringField()
-    access_token_id: str = ObjectIdField(alias="accessTokenId")
+    access_token_id: str = ObjectIdField(db_field="accessTokenId")
     meta = {"collection": "oauth2-refresh-token"}
