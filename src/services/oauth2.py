@@ -5,6 +5,10 @@ import nanoid
 from src.db.documents.account import AccountDocument
 from src.db.documents.oauth2.authorization_code import OAuth2AuthorizationCodeDocument
 from src.db.documents.oauth2.client import OAuth2ClientDocument
+from src.db.documents.oauth2.token import (
+    OAuth2AccessTokenDocument,
+    OAuth2RefreshTokenDocument,
+)
 
 
 class OAuth2Service:
@@ -33,3 +37,51 @@ class OAuth2Service:
             ).save()
         )
         return authorization_code
+
+    @staticmethod
+    def create_access_token(
+        client: OAuth2ClientDocument, account: AccountDocument, scopes: list[str]
+    ) -> OAuth2AccessTokenDocument:
+        while True:
+            token_value = nanoid.generate(size=2048)
+            if not OAuth2AccessTokenDocument.objects(value=token_value):
+                break
+        now: datetime = datetime.utcnow()
+        access_token: OAuth2AccessTokenDocument = OAuth2AccessTokenDocument(
+            value=token_value,
+            issuer="me.socialify.oauth2",
+            audience=client.id,
+            subject=account.id,
+            issued_at=now,
+            expires_at=now + timedelta(hours=6),
+            scopes=scopes,
+        ).save()
+        return access_token
+
+    @staticmethod
+    def create_refresh_token(
+        access_token: OAuth2AccessTokenDocument,
+    ) -> OAuth2RefreshTokenDocument:
+        while True:
+            token_value = nanoid.generate(size=2048)
+            if not OAuth2RefreshTokenDocument.objects(value=token_value):
+                break
+        refresh_token: OAuth2RefreshTokenDocument = OAuth2RefreshTokenDocument(
+            value=token_value,
+            issuer="me.socialify.oauth2",
+            access_token_id=access_token.id,
+        ).save()
+        return refresh_token
+
+    @staticmethod
+    def refresh_access_token(
+        access_token: OAuth2AccessTokenDocument,
+    ) -> OAuth2AccessTokenDocument:
+        while True:
+            token_value = nanoid.generate(size=2048)
+            if not OAuth2AccessTokenDocument.objects(value=token_value):
+                break
+        access_token.update(
+            value=token_value, expires_at=datetime.utcnow() + timedelta(hours=6)
+        )
+        return access_token

@@ -10,6 +10,7 @@ from src.services.session import SessionService
 
 router: APIRouter = APIRouter(prefix="/session/v1", tags=["account-manager.session.v1"])
 
+
 @router.post("/log-in")
 def log_in(
     request: Request,
@@ -20,6 +21,7 @@ def log_in(
     account: AccountDocument = AccountService.authenticate(login, password)
     SessionService.create(request, response, account)
     return AccountInfo.build(account)
+
 
 @router.post("/log-out")
 def log_out(

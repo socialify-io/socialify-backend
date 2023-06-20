@@ -59,7 +59,7 @@ class AccountService:
         ).first()
         if not account:
             raise APIException(
-                401, "incorrect_credentials", "username or password is incorrect"
+                401, "incorrect_credentials", "login or password is incorrect"
             )
         return account
 
@@ -67,7 +67,7 @@ class AccountService:
     def verify_password(account: AccountDocument, password: str) -> None:
         if not bcrypt.checkpw(password.encode(), account.hashed_password.encode()):
             raise APIException(
-                401, "incorrect_credentials", "username or password is incorrect"
+                401, "incorrect_credentials", "login or password is incorrect"
             )
 
     @staticmethod
