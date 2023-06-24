@@ -5,6 +5,7 @@ import requests
 from fastapi import APIRouter, Body, Request, Response, Depends, UploadFile, File
 
 from src.db.documents.account import AccountDocument
+from src.db.documents.oauth2.token import OAuth2AccessTokenDocument
 from src.db.documents.session import SessionDocument
 from src.exceptions import APIException
 from src.models.account_manager.account_v1 import (
@@ -95,6 +96,7 @@ def delete_account(
         )
     SessionService.delete(response, session)
     [session.delete() for session in SessionDocument.objects(account_id=account.id)]
+    [access_token.delete() for access_token in OAuth2AccessTokenDocument.objects(subject=account.id)]
     account.delete()
 
 

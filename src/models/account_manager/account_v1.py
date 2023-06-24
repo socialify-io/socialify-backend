@@ -9,7 +9,7 @@ from src.db.documents.account import AccountGender, AccountDocument
 class AccountInfo(BaseModel):
     id: str
     username: str
-    email_address: str = Field(alias="emailAddress")
+    email_address: EmailStr = Field(alias="emailAddress")
     name: str = Field(alias="firstName")
     last_name: str = Field(alias="lastName")
     gender: AccountGender

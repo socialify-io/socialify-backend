@@ -4,6 +4,7 @@ from typing import Optional
 import bcrypt
 
 from src.db.documents.account import AccountGender, AccountDocument
+from src.db.documents.oauth2.token import OAuth2AccessTokenDocument
 from src.db.documents.session import SessionDocument
 from src.exceptions import APIException
 
@@ -89,3 +90,16 @@ class AccountService:
             password.encode(), bcrypt.gensalt()
         ).decode()
         account.modify(hashed_password=hashed_password)
+
+    @staticmethod
+    def get_by_access_token(access_token: OAuth2AccessTokenDocument) -> AccountDocument:
+        account: Optional[AccountDocument] = AccountDocument.objects(
+            id=access_token.subject
+        ).first()
+        if not account:
+            raise APIException(
+                401,
+                "invalid_access_token",
+                "The access token is assigned to an account that doesn't exist",
+            )
+        return account

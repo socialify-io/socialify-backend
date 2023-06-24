@@ -10,6 +10,7 @@ class OAuth2AccessTokenDocument(Document):
     subject: str = ObjectIdField()
     issued_at: datetime = DateTimeField(db_field="issuedAt")
     expires_at: datetime = DateTimeField(db_field="expiresAt")
+    last_active_date: datetime = DateTimeField(db_field="lastActiveDate")
     scopes: list[str] = ListField(StringField())
     meta = {"collection": "oauth2-access-token"}
 

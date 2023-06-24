@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import nanoid
+from fastapi import Header
 
 from src.db.documents.account import AccountDocument
 from src.db.documents.oauth2.authorization_code import OAuth2AuthorizationCodeDocument
@@ -9,6 +10,7 @@ from src.db.documents.oauth2.token import (
     OAuth2AccessTokenDocument,
     OAuth2RefreshTokenDocument,
 )
+from src.exceptions import APIException
 
 
 class OAuth2Service:
@@ -84,4 +86,18 @@ class OAuth2Service:
         access_token.update(
             value=token_value, expires_at=datetime.utcnow() + timedelta(hours=6)
         )
+        return access_token
+
+    @staticmethod
+    def get_access_token_by_header(
+        value: str = Header(alias="X-Access-Token"),
+    ) -> OAuth2AccessTokenDocument:
+        access_token: OAuth2AccessTokenDocument = OAuth2AccessTokenDocument.objects(
+            value=value
+        ).first()
+        if not access_token or datetime.utcnow() >= access_token.expires_at:
+            raise APIException(
+                401, "unauthorized", "The access token is invalid or expired"
+            )
+        access_token.update(last_active_date=datetime.utcnow())
         return access_token
