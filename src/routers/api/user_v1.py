@@ -23,6 +23,7 @@ def get_my_user_data(
     account: AccountDocument = AccountService.get_by_access_token(access_token)
     return User.build(account)
 
+
 @router.get("/me/avatar")
 def get_my_avatar(
     access_token: OAuth2AccessTokenDocument = Depends(
@@ -64,8 +65,11 @@ def get_user_avatar_by_id(
 
 
 @router.get("")
-def search_user(query: str = Query(min_length=5), access_token: OAuth2AccessTokenDocument = Depends(
+def search_user(
+    query: str = Query(min_length=5),
+    access_token: OAuth2AccessTokenDocument = Depends(
         OAuth2Service.get_access_token_by_header
-    )):
+    ),
+):
     users = AccountDocument.objects(username__contains=query)
     return [User.build(user) for user in (users[:100] if len(users) > 100 else users)]

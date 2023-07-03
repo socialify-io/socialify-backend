@@ -18,6 +18,7 @@ class TokenResponse(BaseModel):
     token_type: str
     refresh_token: str
 
+
 class TokenData(BaseModel):
     jti: str
     iss: str
@@ -28,13 +29,13 @@ class TokenData(BaseModel):
     scope: str
 
     @staticmethod
-    def build(access_token: OAuth2AccessTokenDocument) -> "TokenData":
+    def build(document: OAuth2AccessTokenDocument) -> "TokenData":
         return TokenData(
-            jti=str(access_token.id),
-            iss=access_token.issuer,
-            aud=str(access_token.audience),
-            sub=str(access_token.subject),
-            iat=access_token.issued_at,
-            exp=access_token.expires_at,
-            scope=" ".join(access_token.scopes)
+            jti=str(document.id),
+            iss=document.issuer,
+            aud=str(document.audience),
+            sub=str(document.subject),
+            iat=document.issued_at.timestamp(),
+            exp=document.expires_at.timestamp(),
+            scope=" ".join(document.scopes),
         )

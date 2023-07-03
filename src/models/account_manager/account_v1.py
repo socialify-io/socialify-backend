@@ -17,16 +17,16 @@ class AccountInfo(BaseModel):
     has_avatar: bool = Field(alias="hasAvatar")
 
     @staticmethod
-    def build(account: AccountDocument) -> "AccountInfo":
+    def build(document: AccountDocument) -> "AccountInfo":
         return AccountInfo(
-            id=str(account.id),
-            username=account.username,
-            email_address=account.email_address,
-            name=account.name,
-            last_name=account.last_name,
-            gender=account.gender,
-            created_at=account.created_at,
-            has_avatar=bool(account.avatar),
+            id=str(document.id),
+            username=document.username,
+            email_address=document.email_address,
+            name=document.name,
+            last_name=document.last_name,
+            gender=document.gender,
+            created_at=document.created_at,
+            has_avatar=bool(document.avatar),
         )
 
     class Config:

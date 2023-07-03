@@ -20,11 +20,12 @@ class Audience(BaseModel):
             name=client_document.name,
             website_url=client_document.website_url,
             logo_url=client_document.logo_url,
-            author=client_document.author
+            author=client_document.author,
         )
 
     class Config:
         allow_population_by_field_name = True
+
 
 class Token(BaseModel):
     id: str
@@ -36,7 +37,9 @@ class Token(BaseModel):
     scopes: list[str]
 
     @staticmethod
-    def build(token_document: OAuth2AccessTokenDocument, client_document: OAuth2ClientDocument) -> "Token":
+    def build(
+        token_document: OAuth2AccessTokenDocument, client_document: OAuth2ClientDocument
+    ) -> "Token":
         return Token(
             id=str(token_document.id),
             issuer=token_document.issuer,
@@ -44,9 +47,8 @@ class Token(BaseModel):
             issued_at=token_document.issued_at,
             expires_at=token_document.expires_at,
             last_active_date=token_document.last_active_date,
-            scopes=token_document.scopes
+            scopes=token_document.scopes,
         )
-
 
     class Config:
         allow_population_by_field_name = True

@@ -20,7 +20,12 @@ from src.services.session import SessionService
 
 router: APIRouter = APIRouter(prefix="/oauth2/v1", tags=["api.oauth2.v1"])
 
-API_SCOPES: dict[str, str] = {"user:read": "Read user data."}
+API_SCOPES: dict[str, str] = {
+    "user:read": "Read user data.",
+    "messenger.dm:read": "Read user direct messages.",
+    "messenger.dm:write": "Write direct messages.",
+    "messenger.dm:delete": "Delete user direct messages.",
+}
 ACCOUNT_MANAGER_FRONTEND: str = "http://account-manager.localhost:8000"
 
 
@@ -141,6 +146,11 @@ def get_token(payload: TokenPayload) -> TokenResponse:
         refresh_token=refresh_token.value,
     )
 
+
 @router.get("/token")
-def get_token_data(access_token: OAuth2AccessTokenDocument = Depends(OAuth2Service.get_access_token_by_header)):
+def get_token_data(
+    access_token: OAuth2AccessTokenDocument = Depends(
+        OAuth2Service.get_access_token_by_header
+    ),
+):
     return TokenData.build(access_token)

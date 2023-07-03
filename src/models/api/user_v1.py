@@ -12,14 +12,14 @@ class User(BaseModel):
     has_avatar: bool = Field(alias="hasAvatar")
 
     @staticmethod
-    def build(account: AccountDocument) -> "User":
+    def build(document: AccountDocument) -> "User":
         return User(
-            id=str(account.id),
-            username=account.username,
-            name=account.name,
-            last_name=account.last_name,
-            gender=account.gender,
-            has_avatar=bool(account.avatar),
+            id=str(document.id),
+            username=document.username,
+            name=document.name,
+            last_name=document.last_name,
+            gender=document.gender,
+            has_avatar=bool(document.avatar),
         )
 
     class Config:

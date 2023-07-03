@@ -96,7 +96,10 @@ def delete_account(
         )
     SessionService.delete(response, session)
     [session.delete() for session in SessionDocument.objects(account_id=account.id)]
-    [access_token.delete() for access_token in OAuth2AccessTokenDocument.objects(subject=account.id)]
+    [
+        access_token.delete()
+        for access_token in OAuth2AccessTokenDocument.objects(subject=account.id)
+    ]
     account.delete()
 
 
