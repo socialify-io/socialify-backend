@@ -7,6 +7,7 @@ from mongoengine import (
     EnumField,
     DateTimeField,
     FileField,
+    ListField,
 )
 
 
@@ -28,4 +29,5 @@ class AccountDocument(Document):
         db_field="lastUsernameChangeDate"
     )
     avatar = FileField()
+    sids: list[str] = ListField(StringField())
     meta = {"collection": "account"}

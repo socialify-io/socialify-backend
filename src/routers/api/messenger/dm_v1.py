@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import Optional
 
@@ -9,6 +10,7 @@ from src.db.documents.dm import DirectMessageDocument
 from src.db.documents.oauth2.token import OAuth2AccessTokenDocument
 from src.exceptions import APIException
 from src.models.api.messenger.dm_v1 import DirectMessage
+from src.services.websocket_connection import service as connection_service
 from src.services.account import AccountService
 from src.services.oauth2 import OAuth2Service
 
@@ -42,7 +44,7 @@ def get_direct_messages(
 
 
 @router.post("")
-def send_direct_message(
+async def send_direct_message(
     receiver_id: str = Body(alias="receiverId"),
     text: str = Body(min_length=1, max_length=200),
     access_token: OAuth2AccessTokenDocument = Depends(
@@ -52,20 +54,32 @@ def send_direct_message(
     if "messenger.dm:write" not in access_token.scopes:
         raise APIException(401, "unauthorized", "No permissions")
     account: AccountDocument = AccountService.get_by_access_token(access_token)
-    if not AccountDocument.objects(id=receiver_id):
+    receiver: AccountDocument = AccountDocument.objects(id=receiver_id).first()
+    if not receiver:
         raise APIException(400, "invalid_receiver", "Invalid receiver id")
-    direct_message: DirectMessageDocument = DirectMessageDocument(
+    document: DirectMessageDocument = DirectMessageDocument(
         sender_id=account.id,
         receiver_id=receiver_id,
         text=text.strip(),
         sent_at=datetime.utcnow(),
         deleted=False,
     ).save()
-    return DirectMessage.build(direct_message)
+    direct_message: DirectMessage = DirectMessage.build(document)
+    connections: list = list(
+        set(
+            connection_service.get_connections_by_account(receiver)
+            + connection_service.get_connections_by_account(account)
+        )
+    )
+    for connection in connections:
+        await connection_service.emit(
+            connection, "new_message", json.loads(direct_message.json(by_alias=True))
+        )
+    return direct_message
 
 
 @router.post("/{direct_message_id}/read")
-def read_direct_message(
+async def read_direct_message(
     direct_message_id: str,
     access_token: OAuth2AccessTokenDocument = Depends(
         OAuth2Service.get_access_token_by_header
@@ -80,12 +94,28 @@ def read_direct_message(
     if not direct_message:
         raise APIException(400, "invalid_dm", "Invalid dm id")
     direct_message.update(read_at=datetime.utcnow())
-    print(direct_message)
-
+    receiver: Optional[AccountDocument] = AccountDocument.objects(
+        id=direct_message.receiver_id
+    ).first()
+    connections: list = list(
+        set(
+            connection_service.get_connections_by_account(receiver)
+            if receiver
+            else [] + connection_service.get_connections_by_account(account)
+        )
+    )
+    for connection in connections:
+        await connection_service.emit(
+            connection,
+            "update_message",
+            json.loads(
+                DirectMessage.build(direct_message.reload()).json(by_alias=True)
+            ),
+        )
 
 
 @router.delete("/{direct_message_id}")
-def delete_direct_message(
+async def delete_direct_message(
     direct_message_id: str,
     access_token: OAuth2AccessTokenDocument = Depends(
         OAuth2Service.get_access_token_by_header
@@ -100,3 +130,21 @@ def delete_direct_message(
     if not direct_message:
         raise APIException(400, "invalid_dm", "Invalid dm id")
     direct_message.update(text=None, deleted=True)
+    receiver: AccountDocument = AccountDocument.objects(
+        id=direct_message.receiver_id
+    ).first()
+    connections: list = list(
+        set(
+            connection_service.get_connections_by_account(receiver)
+            if receiver
+            else [] + connection_service.get_connections_by_account(account)
+        )
+    )
+    for connection in connections:
+        await connection_service.emit(
+            connection,
+            "update_message",
+            json.loads(
+                DirectMessage.build(direct_message.reload()).json(by_alias=True)
+            ),
+        )
