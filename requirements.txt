@@ -1,0 +1,16 @@
+flask
+flask_socketio
+asgiref
+pytest
+pytest-flask
+PyCryptodome
+sqlalchemy
+bcrypt
+cryptography
+pytz
+Pillow
+ecdsa
+tinyec
+cryptography
+dnspython
+pymongo
